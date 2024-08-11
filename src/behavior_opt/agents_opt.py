@@ -145,7 +145,7 @@ def optimization(
     mca_dir = Path("tmp")
     mca_file_path = mca_dir / "storehouse.out"
     task_file_path = mca_dir / "tasks.csv"
-    map_config = read_map_config(map_config_path)
+    map_config = read_map_config(map_config_path, stock_items_path="####optimizationを使うなら修正する########")
     create_agent_csv(map_config, agents_dir, agent_num_range, agent_capacity)
     create_item_files(map_config, item_config_path, picking_list_path, n_items)
 

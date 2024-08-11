@@ -1,6 +1,7 @@
 import json
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 
@@ -17,13 +18,13 @@ DATASET = "apparel"
 
 
 def read_map_config(
-    map_config_path: Path, config_path: Path | None = None
+    map_config_path: Path, stock_items_path: Optional[Path]=None, config_path: Optional[Path]=None
 ) -> MapConfig:
     if map_config_path.suffix == ".csv":
         assert config_path is not None, "config_path must be specified"
         return read_map_config_csv(map_config_path, config_path)
     elif map_config_path.suffix == ".json":
-        return read_map_config_json(map_config_path)
+        return read_map_config_json(map_config_path, stock_items_path)
     else:
         raise ValueError(f"Unknown map config file type: {map_config_path}")
 
@@ -59,7 +60,7 @@ def read_map_config_csv(map_config_path: Path, config_path: Path) -> MapConfig:
     return map_config
 
 
-def read_map_config_json(map_config_path: Path) -> MapConfig:
+def read_map_config_json(map_config_path: Path, stock_items_path: Optional[Path]=None) -> MapConfig:
     with open(map_config_path) as f:
         raw_map_config = json.load(f)
     map_width: Length = raw_map_config["map_width"]
@@ -78,6 +79,11 @@ def read_map_config_json(map_config_path: Path) -> MapConfig:
     map_config: MapConfig = MapConfig(
         map_width=map_width, map_height=map_height, racks=racks
     )
+    if stock_items_path is not None:
+        with open(stock_items_path) as f:
+            stock_items = json.load(f)
+    else:
+        stock_items = raw_map_config
     item_configs: list[ItemConfig] = [
     ItemConfig(
         name=item["name"],
@@ -85,7 +91,7 @@ def read_map_config_json(map_config_path: Path) -> MapConfig:
         amount=int(item["volume"]),
         volume=1,
     )
-    for item in raw_map_config["items"]
+    for item in stock_items["items"]
 ]
     return map_config, item_configs
 

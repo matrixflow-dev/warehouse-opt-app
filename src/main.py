@@ -19,6 +19,7 @@ current_dir = Path(__file__).resolve().parent
 storage_dir = current_dir / "storage"
 agents_dir = storage_dir / "agents"
 map_dir = storage_dir / "map_configs"
+stocks_dir = storage_dir / "stocks"
 picking_list_dir = storage_dir / "picking_lists"
 
 USER_NAME = "ai_shop_assistant"
@@ -48,11 +49,11 @@ async def index():
     return FileResponse(front_dir / "index.html")
 
 agents = ["0001", "0002", "0003"]
-map_configs = ["0001", "0002", "0003"]
+map_configs = ["0002"]
 stocks = [
-    {"id": "stock001", "created_at": "2024年10月7日10:12:23", "description": "ああああ"},
-    {"id": "stock002", "created_at": "2024年10月7日11:12:23", "description": "いいいい"},
-    {"id": "stock003", "created_at": "2024年10月7日12:12:23", "description": "うううう"},
+    {"id": "0001", "created_at": "2024年10月7日10:12:23", "description": "ああああ"},
+    {"id": "0002", "created_at": "2024年10月7日11:12:23", "description": "いいいい"},
+    {"id": "0003", "created_at": "2024年10月7日12:12:23", "description": "うううう"},
     # さらに多くの在庫データが続く...
 ]
 picking_lists = ["0001", "0002", "0003"]
@@ -103,6 +104,7 @@ async def start_process(data: Dict):
         current_dir / "behavior_opt/mca/mca.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}.json", 
+        "-s", stocks_dir / f"{stock_id}.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-o", result_dir
     ]
@@ -110,6 +112,9 @@ async def start_process(data: Dict):
     try:
         stdout, stderr = await run_subprocess(command)
         print("Output:\n", stdout)
+        print("Output Error:\n", stderr)
+        if stderr:
+            raise Exception(stderr)
 
         download_dir = result_dir / "download"
         download_dir.mkdir()
@@ -164,6 +169,7 @@ async def start_visualize(data: Dict):
         current_dir / "behavior_opt/visualizer.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}.json", 
+        "-s", stocks_dir / f"{stock_id}.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-B", result_dir / "output.csv",
         "-o", output_gif_path

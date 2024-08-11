@@ -93,6 +93,7 @@ def create_mca_task_file(tasks: Tasks, output_dir: Path):
 
 def preprocess(
     map_config_path: Path,
+    stock_items_path: Path,
     config_path: Path | None,
     agent_config_path: Path,
     item_config_path: Path | None,
@@ -102,7 +103,7 @@ def preprocess(
     if config_path is None or item_config_path is None:
         # map_config_pathはjsonのみ
         assert map_config_path.suffix == ".json"
-        map_config, item_config = read_map_config(map_config_path)
+        map_config, item_config = read_map_config(map_config_path, stock_items_path)
     else:
         map_config = read_map_config(map_config_path, config_path)
         item_config = read_item_config(item_config_path)

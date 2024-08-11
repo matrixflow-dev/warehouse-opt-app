@@ -13,6 +13,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--map-config-path", required=True, type=Path)
     parser.add_argument("-c", "--config-path", required=False, type=Path)
     parser.add_argument("-p", "--picking-list-path", required=True, type=Path)
+    parser.add_argument("-s", "--stock-items-path", required=True, type=Path)
     parser.add_argument("-o", "--output-dir", required=True, type=Path)
     args = parser.parse_args()
     map_config_path: Path = args.map_config_path
@@ -20,6 +21,7 @@ if __name__ == "__main__":
     agent_config_path: Path = args.agent_config_path
     item_config_path = args.item_config_path
     picking_list_path: Path = args.picking_list_path
+    stock_items_path: Path = args.stock_items_path
     output_dir_path: Path = args.output_dir
     mca_output_dir: Path = output_dir_path / "mca"
 
@@ -30,6 +32,7 @@ if __name__ == "__main__":
     print("preprocessing...")
     preprocess(
         map_config_path=map_config_path,
+        stock_items_path=stock_items_path,
         agent_config_path=agent_config_path,
         item_config_path=item_config_path,
         picking_list_path=picking_list_path,

@@ -83,6 +83,7 @@ def create_image(
 
 def visualizer(
     map_config_path: Path,
+    stock_items_path: Path | None,
     config_path: Path | None,
     item_configs_path: Path | None,
     agent_configs_path: Path,
@@ -92,7 +93,7 @@ def visualizer(
 ) -> None:
     if config_path is None or item_configs_path is None:
         assert map_config_path.suffix == ".json", "map_config_path must be a json file"
-        map_config, item_config = read_map_config(map_config_path, config_path)
+        map_config, item_config = read_map_config(map_config_path, stock_items_path=stock_items_path)
     else:
         map_config = read_map_config(map_config_path, config_path)
         item_config = read_item_config(item_configs_path)
@@ -115,12 +116,14 @@ if __name__ == "__main__":
     parser.add_argument("-a", "--agent-configs-path", required=True, type=Path)
     parser.add_argument("-i", "--item-configs-path", required=False, type=Path)
     parser.add_argument("-m", "--map-config-path", required=True, type=Path)
+    parser.add_argument("-s", "--stock-items-path", required=True, type=Path)
     parser.add_argument("-c", "--config-path", required=False, type=Path)
     parser.add_argument("-p", "--picking-list-path", required=True, type=Path)
     parser.add_argument("-B", "--behavior-opt-output-path", required=True, type=Path)
     parser.add_argument("-o", "--output-gif-path", required=True, type=Path)
     args = parser.parse_args()
     map_config_path: Path = args.map_config_path
+    stock_items_path: Path = args.stock_items_path
     config_path = args.config_path
     agent_configs_path: Path = args.agent_configs_path
     item_configs_path = args.item_configs_path
@@ -130,6 +133,7 @@ if __name__ == "__main__":
     output_gif_path.parent.mkdir(exist_ok=True, parents=True)
     visualizer(
         map_config_path=map_config_path,
+        stock_items_path=stock_items_path,
         config_path=config_path,
         agent_configs_path=agent_configs_path,
         item_configs_path=item_configs_path,
