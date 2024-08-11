@@ -37,7 +37,7 @@ SIP で構築したアルゴリズムをウェブアプリケーション化し�
 ビルドが完了したら、以下のコマンドでアプリケーションを起動できます。
 
 ```sh
-docker run -p 80:80 --rm -it behavior_opt_local
+docker run -v $PWD/storage:/root/ai/src/storage/  -p 80:80 --rm -it behavior_opt_local
 ```
 
 このコマンドは、Docker コンテナ内でアプリケーションを実行し、ホストマシンのポート 80 でサービスを提供します。

@@ -30,6 +30,7 @@ ENV PYTHONPATH "${PYTHONPATH}:/root/ai/src/"
 COPY ./behavior_opt /root/ai/src/behavior_opt
 COPY ./front /root/ai/src/front
 COPY ./main.py /root/ai/src/
+COPY ./mfutils.py /root/ai/src/
 COPY ./storage /root/ai/src/storage
 
 
