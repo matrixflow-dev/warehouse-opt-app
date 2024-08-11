@@ -1,10 +1,8 @@
-import asyncio
-import subprocess
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from typing import List, Dict
+from typing import List, Dict, Optional
 from pathlib import Path
 import shutil
 import logging
@@ -49,7 +47,12 @@ async def index():
 
 agents = ["0001", "0002", "0003"]
 map_configs = ["0001", "0002", "0003"]
-stocks = ["stock123", "stock456", "stock789"]
+stocks = [
+    {"id": "stock001", "created_at": "2024年10月7日10:12:23", "description": "ああああ"},
+    {"id": "stock002", "created_at": "2024年10月7日11:12:23", "description": "いいいい"},
+    {"id": "stock003", "created_at": "2024年10月7日12:12:23", "description": "うううう"},
+    # さらに多くの在庫データが続く...
+]
 picking_lists = ["0001", "0002", "0003"]
 
 @app.get("/api/agents")
@@ -61,8 +64,14 @@ async def get_map_configs():
     return JSONResponse(content=map_configs)
 
 @app.get("/api/stocks")
-async def get_stocks():
-    return JSONResponse(content=stocks)
+async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+    total_stocks = len(stocks)
+    paginated_stocks = stocks[offset:offset+limit]
+    response_data = {
+        "total": total_stocks,
+        "stocks": paginated_stocks
+    }
+    return JSONResponse(content=response_data)
 
 @app.get("/api/picking-lists")
 async def get_picking_lists():

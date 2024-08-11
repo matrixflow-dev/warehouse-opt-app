@@ -26,8 +26,8 @@
             <b-col cols="5">
                 <b-form-group label="在庫情報">
                     <b-form-select v-model="selectedStock">
-                        <b-form-select-option v-for="stock in stockOptions" :key="stock" :value="stock">
-                            {{ stock }}
+                        <b-form-select-option v-for="stock in stockOptions" :key="stock.id" :value="stock.id">
+                            {{ stock.id }} - {{ stock.created_at }}
                         </b-form-select-option>
                     </b-form-select>
                 </b-form-group>
@@ -92,7 +92,7 @@ export default {
             ]).then(([agentsRes, mapConfigsRes, stocksRes, pickingListsRes]) => {
                 this.agentOptions = agentsRes.data;
                 this.mapConfigOptions = mapConfigsRes.data;
-                this.stockOptions = stocksRes.data;
+                this.stockOptions = stocksRes.data.stocks;
                 this.pickingListOptions = pickingListsRes.data;
             }).catch(error => {
                 console.error('Error fetching options:', error);

@@ -1,12 +1,16 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import Home from '@/components/Home';
-import Features from '@/components/Features';
-import Pricing from '@/components/Pricing';
+import Results from '@/components/Results';
+import Inventory from '@/components/Inventory';
+import PickerManagement from '@/components/PickerManagement';
+import MapManagement from '@/components/MapManagement';
+import APIManagement from '@/components/APIManagement';
 
 Vue.use(Router);
 
 export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
@@ -14,14 +18,29 @@ export default new Router({
       component: Home
     },
     {
-      path: '/features',
-      name: 'Features',
-      component: Features
+      path: '/results',
+      name: 'Results',
+      component: Results
     },
     {
-      path: '/pricing',
-      name: 'Pricing',
-      component: Pricing
+      path: '/inventory',
+      name: 'Inventory',
+      component: Inventory
+    },
+    {
+      path: '/picker-management',
+      name: 'PickerManagement',
+      component: PickerManagement
+    },
+    {
+      path: '/map-management',
+      name: 'MapManagement',
+      component: MapManagement
+    },
+    {
+      path: '/api-management',
+      name: 'APIManagement',
+      component: APIManagement
     }
   ]
 });

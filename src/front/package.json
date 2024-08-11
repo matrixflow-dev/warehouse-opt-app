@@ -13,6 +13,8 @@
     "bootstrap-vue": "^2.23.1",
     "core-js": "^3.8.3",
     "css-loader": "^7.1.2",
+    "node-sass": "^9.0.0",
+    "sass-loader": "^16.0.0",
     "vue": "^2.7.16",
     "vue-axios": "^3.5.2",
     "vue-router": "^2.8.1",

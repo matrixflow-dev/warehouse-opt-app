@@ -5,11 +5,11 @@
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
         <b-nav-item tag="router-link" to="/">ホーム</b-nav-item>
-        <b-nav-item tag="router-link" to="/features">結果</b-nav-item>
-        <b-nav-item tag="router-link" to="/features">在庫情報</b-nav-item>
-        <b-nav-item tag="router-link" to="/features">ピッカー管理</b-nav-item>
-        <b-nav-item tag="router-link" to="/pricing">マップ管理</b-nav-item>
-        <b-nav-item tag="router-link" to="/pricing">API管理</b-nav-item>
+        <b-nav-item tag="router-link" to="/results">結果</b-nav-item>
+        <b-nav-item tag="router-link" to="/inventory">在庫情報</b-nav-item>
+        <b-nav-item tag="router-link" to="/picker-management">ピッカー管理</b-nav-item>
+        <b-nav-item tag="router-link" to="/map-management">マップ管理</b-nav-item>
+        <b-nav-item tag="router-link" to="/api-management">API管理</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
       </b-navbar-nav>

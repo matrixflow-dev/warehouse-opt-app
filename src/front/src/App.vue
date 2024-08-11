@@ -1,7 +1,7 @@
 <template>
   <div>
     <Main />
-    <router-view />
+    <router-view class="content-view" />
   </div>
 </template>
 
@@ -17,12 +17,8 @@ export default {
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+.content-view {
+  margin: 20px;
+  padding: 20px;
 }
 </style>
