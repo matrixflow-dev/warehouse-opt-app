@@ -10,7 +10,8 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 import traceback
 from pathlib import Path
 import sys
-import json
+import subprocess
+
 import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -64,10 +65,10 @@ async def index():
 
 
 # Sample data for demonstration purposes
-agents = ["agent1", "agent2", "agent3"]
-map_configs = ["config123", "config456", "config789"]
+agents = ["0001", "0002", "0003"]
+map_configs = ["0001", "0002", "0003"]
 stocks = ["stock123", "stock456", "stock789"]
-picking_lists = ["list123", "list456", "list789"]
+picking_lists = ["0001", "0002", "0003"]
 
 @app.get("/api/agents")
 async def get_agents():
@@ -96,6 +97,34 @@ async def start_process(data: Dict):
     # Perform some validation (optional)
     if not agent_ids or not map_config_id or not stock_id or not picking_list_id:
         raise HTTPException(status_code=400, detail="All fields are required")
+    
+
+    storage_dir = current_dir / "storage"
+
+    agents_dir =  storage_dir / "agents"
+    map_dir = storage_dir / "map_configs"
+    picking_list_dir = storage_dir / "picking_lists"
+    result_dir = storage_dir / "results"
+
+    print(result_dir)
+    
+    command = [
+        "python3", 
+        current_dir / "behavior_opt/mca/mca.py", 
+        "-a", agents_dir / f"{agent_ids[0]}.csv", 
+        "-m", map_dir / f"{map_config_id}.json", 
+        "-p", picking_list_dir / f"{picking_list_id}.csv", 
+        "-o", result_dir
+    ]
+
+    try:
+        result = subprocess.run(command, check=True, text=True, capture_output=True)
+        print("Output:\n", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("Error:\n", e.stderr)
+    
+
+
 
     # Implement your process logic here
     # This is just a placeholder response

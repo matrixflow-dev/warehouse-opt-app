@@ -1,38 +1,52 @@
 <template>
     <div>
-        <b-form-group label="Select Agents:">
-            <b-form-select v-model="selectedAgents" multiple>
-                <b-form-select-option v-for="agent in agentOptions" :key="agent" :value="agent">
-                    {{ agent }}
-                </b-form-select-option>
-            </b-form-select>
-        </b-form-group>
+        <b-row class="justify-content-center">
+            <b-col cols="5">
+                <b-form-group label="ピッカー">
+                    <b-form-select v-model="selectedAgents" multiple>
+                        <b-form-select-option v-for="agent in agentOptions" :key="agent" :value="agent">
+                            {{ agent }}
+                        </b-form-select-option>
+                    </b-form-select>
+                </b-form-group>
+            </b-col>
 
-        <b-form-group label="Select Map Config:">
-            <b-form-select v-model="selectedMapConfig">
-                <b-form-select-option v-for="config in mapConfigOptions" :key="config" :value="config">
-                    {{ config }}
-                </b-form-select-option>
-            </b-form-select>
-        </b-form-group>
+            <b-col cols="5">
+                <b-form-group label="マップ情報">
+                    <b-form-select v-model="selectedMapConfig">
+                        <b-form-select-option v-for="config in mapConfigOptions" :key="config" :value="config">
+                            {{ config }}
+                        </b-form-select-option>
+                    </b-form-select>
+                </b-form-group>
+            </b-col>
+        </b-row>
 
-        <b-form-group label="Select Stock:">
-            <b-form-select v-model="selectedStock">
-                <b-form-select-option v-for="stock in stockOptions" :key="stock" :value="stock">
-                    {{ stock }}
-                </b-form-select-option>
-            </b-form-select>
-        </b-form-group>
+        <b-row class="justify-content-center">
+            <b-col cols="5">
+                <b-form-group label="在庫情報">
+                    <b-form-select v-model="selectedStock">
+                        <b-form-select-option v-for="stock in stockOptions" :key="stock" :value="stock">
+                            {{ stock }}
+                        </b-form-select-option>
+                    </b-form-select>
+                </b-form-group>
+            </b-col>
 
-        <b-form-group label="Select Picking List:">
-            <b-form-select v-model="selectedPickingList">
-                <b-form-select-option v-for="list in pickingListOptions" :key="list" :value="list">
-                    {{ list }}
-                </b-form-select-option>
-            </b-form-select>
-        </b-form-group>
+            <b-col cols="5">
+                <b-form-group label="ピッキングリスト">
+                    <b-form-select v-model="selectedPickingList">
+                        <b-form-select-option v-for="list in pickingListOptions" :key="list" :value="list">
+                            {{ list }}
+                        </b-form-select-option>
+                    </b-form-select>
+                </b-form-group>
+            </b-col>
+        </b-row>
 
-        <b-button variant="primary" @click="sendRequest">Send Request</b-button>
+        <b-row class="justify-content-center">
+            <b-button variant="primary" @click="sendRequest">解析開始</b-button>
+        </b-row>
     </div>
 </template>
 
