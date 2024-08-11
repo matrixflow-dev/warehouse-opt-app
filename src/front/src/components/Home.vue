@@ -1,6 +1,14 @@
 <template>
     <div>
         <b-row class="justify-content-center">
+            <b-col cols="10">
+                <b-alert :show="errorMessage !== null" variant="danger" dismissible @dismissed="errorMessage = null">
+                    {{ errorMessage }}
+                </b-alert>
+            </b-col>
+        </b-row>
+
+        <b-row class="justify-content-center">
             <b-col cols="5">
                 <b-form-group label="ピッカー">
                     <b-form-select v-model="selectedAgents" multiple>
@@ -79,7 +87,8 @@ export default {
             selectedPickingList: '',
             loading: false,
             gifSrc: null,
-            resultId: null
+            resultId: null,
+            errorMessage: null
         };
     },
     methods: {
@@ -95,11 +104,14 @@ export default {
                 this.stockOptions = stocksRes.data.stocks;
                 this.pickingListOptions = pickingListsRes.data;
             }).catch(error => {
-                console.error('Error fetching options:', error);
+                this.errorMessage = '予期せぬエラーが発生しました。管理者に問い合わせてください: ' + error.message;
             });
         },
         sendRequest() {
+            this.resultId = null
             this.loading = true;
+            this.errorMessage = null;
+
             const payloadStart = {
                 agent_ids: this.selectedAgents,
                 map_config_id: this.selectedMapConfig,
@@ -109,7 +121,6 @@ export default {
 
             axios.post('/api/start', payloadStart)
                 .then(responseStart => {
-                    console.log('Response:', responseStart.data);
                     this.resultId = responseStart.data.result_id;
 
                     const payloadViz = {
@@ -122,11 +133,11 @@ export default {
                     return axios.post('/api/visualize', payloadViz);
                 })
                 .then(response => {
-                    console.log('Response:', response.data);
                     this.gifSrc = `data:image/gif;base64,${response.data.gif}`;
                 })
                 .catch(error => {
-                    console.error('Error sending request:', error);
+                    this.errorMessage = '予期せぬエラーが発生しました。管理者に問い合わせてください: ' + error.message;
+                    console.log(this.errorMessage)
                 })
                 .finally(() => {
                     this.loading = false;
@@ -153,7 +164,7 @@ export default {
                 link.click();
                 document.body.removeChild(link);
             }).catch(error => {
-                console.error("Error downloading the ZIP file:", error);
+                this.errorMessage = '予期せぬエラーが発生しました。管理者に問い合わせてください: ' + error.message;
             });
         }
     },
