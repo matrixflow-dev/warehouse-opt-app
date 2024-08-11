@@ -8,9 +8,9 @@ module.exports = defineConfig({
     open: true,       // 開発サーバー起動時にブラウザを自動で開くかどうか
     proxy: {
       '/api': {
-        target: 'http://0.0.0.0:8000',  // FastAPIのプロキシ先
+        target: 'http://0.0.0.0:80',  // FastAPIのプロキシ先
         changeOrigin: true,
-        pathRewrite: { '^/api': '' },
+        pathRewrite: { '^/api': '/api' },
       },
     },
   },

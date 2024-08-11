@@ -4,9 +4,10 @@
     <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
     <b-collapse id="nav-collapse" is-nav>
       <b-navbar-nav>
-        <b-nav-item tag="router-link" to="/">Home</b-nav-item>
-        <b-nav-item tag="router-link" to="/features">Features</b-nav-item>
-        <b-nav-item tag="router-link" to="/pricing">Pricing</b-nav-item>
+        <b-nav-item tag="router-link" to="/">ホーム</b-nav-item>
+        <b-nav-item tag="router-link" to="/features">ピッカー管理</b-nav-item>
+        <b-nav-item tag="router-link" to="/pricing">マップ管理</b-nav-item>
+        <b-nav-item tag="router-link" to="/pricing">API管理</b-nav-item>
       </b-navbar-nav>
       <b-navbar-nav class="ml-auto">
       </b-navbar-nav>
