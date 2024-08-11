@@ -1,0 +1,5 @@
+agent_id,amount,initial_place_row,initial_place_col
+agent1,10,49,8
+agent2,10,49,16
+agent3,10,49,33
+agent4,10,49,41

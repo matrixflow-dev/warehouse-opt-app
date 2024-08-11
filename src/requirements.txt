@@ -1,0 +1,14 @@
+numpy==1.23.3
+gym==0.26.1
+pettingzoo==1.20.1
+pygame==2.1.2
+pillow==9.2.0
+networkx
+tqdm
+pytest
+pytest-cov
+pytest-html
+pytest-xdist
+pandas
+fastapi
+uvicorn

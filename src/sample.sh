@@ -1,0 +1,3 @@
+python3 ai/src/behavior_opt/visualizer.py -a ai/src/data/input/agents.csv -m ai/src/data/input/map_config.json -p ai/src/data/input/shipped_items_with_amount.csv  -B ai/src/data/output/output.csv -o ai/src/data/output/test.gif
+
+python3 ai/src/behavior_opt/mca/mca.py -a ai/src/data/input/agents.csv -m ai/src/data/input/map_config.json -p ai/src/data/input/shipped_items_with_amount.csv -o ai/src/data/output/
