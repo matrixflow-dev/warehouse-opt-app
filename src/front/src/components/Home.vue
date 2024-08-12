@@ -22,8 +22,8 @@
             <b-col cols="5">
                 <b-form-group label="マップ情報">
                     <b-form-select v-model="selectedMapConfig">
-                        <b-form-select-option v-for="config in mapConfigOptions" :key="config" :value="config">
-                            {{ config }}
+                        <b-form-select-option v-for="config in mapConfigOptions" :key="config.id" :value="config.id">
+                            {{ config.name }}
                         </b-form-select-option>
                     </b-form-select>
                 </b-form-group>
@@ -100,7 +100,7 @@ export default {
                 axios.get('/api/picking-lists')
             ]).then(([agentsRes, mapConfigsRes, stocksRes, pickingListsRes]) => {
                 this.agentOptions = agentsRes.data;
-                this.mapConfigOptions = mapConfigsRes.data;
+                this.mapConfigOptions = mapConfigsRes.data.mapConfigs; // mapConfigs配列を取得
                 this.stockOptions = stocksRes.data.stocks;
                 this.pickingListOptions = pickingListsRes.data;
             }).catch(error => {
@@ -108,7 +108,7 @@ export default {
             });
         },
         sendRequest() {
-            this.resultId = null
+            this.resultId = null;
             this.loading = true;
             this.errorMessage = null;
 
@@ -137,7 +137,7 @@ export default {
                 })
                 .catch(error => {
                     this.errorMessage = '予期せぬエラーが発生しました。管理者に問い合わせてください: ' + error.message;
-                    console.log(this.errorMessage)
+                    console.log(this.errorMessage);
                 })
                 .finally(() => {
                     this.loading = false;
@@ -148,10 +148,10 @@ export default {
                 responseType: 'blob'
             }).then(response => {
                 const contentDisposition = response.headers['content-disposition'];
-                let filename = this.zipId + '.zip';
+                let filename = this.resultId + '.zip';
                 if (contentDisposition) {
                     const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-                    if (filenameMatch.length > 1) {
+                    if (filenameMatch && filenameMatch.length > 1) {
                         filename = filenameMatch[1];
                     }
                 }

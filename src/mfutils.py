@@ -6,10 +6,16 @@ from datetime import datetime, timedelta
 
 
 
-def get_jst_now():
+def get_jst_now(format="file"):
+    """
+     format file or record
+    """
     current_time = datetime.utcnow()
     now_jst = current_time + timedelta(hours=9)
-    now_jst_string = now_jst.strftime('%Y_%m_%d_%H_%M_%S')
+    if format == "file":
+        now_jst_string = now_jst.strftime('%Y_%m_%d_%H_%M_%S')
+    elif format == "record":
+        now_jst_string = now_jst.strftime('%Y年%m月%d日 %H時%M分%S秒')
     return now_jst_string
 
 def generate_random_string(length=8):

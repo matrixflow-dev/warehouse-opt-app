@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +9,7 @@ import logging
 import base64
 import asyncio
 import subprocess
+import json
 
 from mfutils import generate_random_string, parse_log, parse_route, get_jst_now
 
@@ -49,7 +50,6 @@ async def index():
     return FileResponse(front_dir / "index.html")
 
 agents = ["0001", "0002", "0003"]
-map_configs = ["0002"]
 stocks = [
     {"id": "0001", "created_at": "2024年10月7日10:12:23", "description": "ああああ"},
     {"id": "0002", "created_at": "2024年10月7日11:12:23", "description": "いいいい"},
@@ -63,8 +63,28 @@ async def get_agents():
     return JSONResponse(content=agents)
 
 @app.get("/api/map-configs")
-async def get_map_configs():
-    return JSONResponse(content=map_configs)
+async def get_map_configs(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+
+    sorted_dirs = sorted(map_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_map_configs = len(sorted_meta_paths)
+    paginated_map_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_map_configs = []
+    for p in paginated_map_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_map_configs.append(d)
+        except Exception as e:
+            logger.info(f"cannot get path: {p}")
+    
+    response_data = {
+        "total": total_map_configs,
+        "mapConfigs": paginated_map_configs
+    }
+    return JSONResponse(content=response_data)
 
 @app.get("/api/stocks")
 async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
@@ -79,6 +99,41 @@ async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1))
 @app.get("/api/picking-lists")
 async def get_picking_lists():
     return JSONResponse(content=picking_lists)
+
+@app.post("/api/map-configs/upload")
+async def upload_map_config(file: UploadFile = File(...)):
+    try:
+
+        sorted_dirs = sorted(map_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+        if len(sorted_dirs) > 0:
+            highest_number = int(sorted_dirs[0].name)
+            next_number = highest_number + 1
+            next_number = str(next_number).zfill(4)
+        else:
+            next_number = "0001"
+
+        target_dir = map_dir / next_number
+        target_dir.mkdir()
+        file_path = target_dir / "config.json"
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        
+        meta_info = {
+            "id": next_number,
+            "name": "aaaaaaa",
+            "description": "ああああああ",
+            "created_at": get_jst_now(format="record")
+        }
+        meta_path = target_dir / "meta.json"
+        with open(meta_path, "w") as f:
+            json.dump(meta_info, f, indent=4)
+        
+        return JSONResponse(content={"message": "File uploaded successfully", "id": next_number})
+
+    except Exception as e:
+        logger.error("Error occurred while uploading the file: %s", str(e))
+        raise HTTPException(status_code=500, detail="File upload failed")
 
 async def run_subprocess(command):
     process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

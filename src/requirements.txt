@@ -12,3 +12,4 @@ pytest-xdist
 pandas
 fastapi
 uvicorn
+python-multipart
