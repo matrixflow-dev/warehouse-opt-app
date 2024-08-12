@@ -3,12 +3,30 @@
         <h1>マップ管理</h1>
         <p>マップ管理の情報を表示します。</p>
 
-        <!-- JSONファイルアップロードエリア -->
-        <b-form @submit.prevent="uploadJsonFile">
-            <b-form-file v-model="jsonFile" accept=".json" placeholder="JSONファイルを選択..."
-                browse-text="ファイルを選択"></b-form-file>
-            <b-button type="submit" variant="primary" class="mt-2">アップロード</b-button>
-        </b-form>
+        <!-- 新規追加アイコン -->
+        <b-button variant="success" @click="toggleForm" class="mb-3" v-b-tooltip.hover title="新規追加">
+            <b-icon icon="plus-circle"></b-icon>
+        </b-button>
+
+        <!-- アラートメッセージ -->
+        <b-alert :show="alertVisible" :variant="alertVariant" dismissible @dismissed="alertVisible = false" class="mb-3">
+            {{ alertMessage }}
+        </b-alert>
+
+        <!-- JSONファイルアップロードエリア（カード表示） -->
+        <b-card v-if="showForm" class="mb-3">
+            <b-form @submit.prevent="uploadJsonFile">
+                <b-form-group label="名前">
+                    <b-form-input v-model="name" placeholder="名前を入力"></b-form-input>
+                </b-form-group>
+                <b-form-group label="説明">
+                    <b-form-input v-model="description" placeholder="説明を入力"></b-form-input>
+                </b-form-group>
+                <b-form-file v-model="jsonFile" accept=".json" placeholder="config.jsonファイルを選択..."
+                    browse-text="ファイルを選択"></b-form-file>
+                <b-button type="submit" variant="primary" class="mt-2">アップロード</b-button>
+            </b-form>
+        </b-card>
 
         <rack-map />
 
@@ -36,12 +54,21 @@ export default {
             currentPage: 1,
             perPage: 10,
             jsonFile: null,  // JSONファイルを格納
+            name: '', // 名前のデータを格納
+            description: '', // 説明のデータを格納
+            showForm: false, // フォームの表示/非表示を制御
+            alertVisible: false, // アラートの表示/非表示を制御
+            alertMessage: '', // アラートメッセージを格納
+            alertVariant: 'success', // アラートのバリアントを格納
         };
     },
     mounted() {
         this.fetchMapConfigs();
     },
     methods: {
+        toggleForm() {
+            this.showForm = !this.showForm;
+        },
         fetchMapConfigs() {
             const offset = (this.currentPage - 1) * this.perPage;
             const limit = this.perPage;
@@ -62,12 +89,14 @@ export default {
         },
         uploadJsonFile() {
             if (!this.jsonFile) {
-                alert("ファイルを選択してください");
+                this.showAlert('ファイルを選択してください', 'danger');
                 return;
             }
 
             const formData = new FormData();
             formData.append('file', this.jsonFile);
+            formData.append('name', this.name);
+            formData.append('description', this.description);
 
             axios.post('/api/map-configs/upload', formData, {
                 headers: {
@@ -76,13 +105,25 @@ export default {
             })
                 .then(response => {
                     console.log(response)
-                    alert('ファイルが正常にアップロードされました。');
+                    this.showAlert('ファイルが正常にアップロードされました。', 'success');
                     this.fetchMapConfigs(); // アップロード後にテーブルを更新
+                    this.resetForm(); // フォームをリセットして非表示にする
                 })
                 .catch(error => {
                     console.error('ファイルのアップロードに失敗しました:', error);
-                    alert('ファイルのアップロードに失敗しました。');
+                    this.showAlert('ファイルのアップロードに失敗しました。', 'danger');
                 });
+        },
+        resetForm() {
+            this.jsonFile = null;
+            this.name = '';
+            this.description = '';
+            this.showForm = false;
+        },
+        showAlert(message, variant) {
+            this.alertMessage = message;
+            this.alertVariant = variant;
+            this.alertVisible = true;
         }
     }
 }

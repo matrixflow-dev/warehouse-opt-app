@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -101,9 +101,12 @@ async def get_picking_lists():
     return JSONResponse(content=picking_lists)
 
 @app.post("/api/map-configs/upload")
-async def upload_map_config(file: UploadFile = File(...)):
+async def upload_map_config(
+    file: UploadFile = File(...),
+    name: str = Form(...),
+    description: str = Form(...)
+):
     try:
-
         sorted_dirs = sorted(map_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
         if len(sorted_dirs) > 0:
             highest_number = int(sorted_dirs[0].name)
@@ -121,8 +124,8 @@ async def upload_map_config(file: UploadFile = File(...)):
         
         meta_info = {
             "id": next_number,
-            "name": "aaaaaaa",
-            "description": "ああああああ",
+            "name": name,
+            "description": description,
             "created_at": get_jst_now(format="record")
         }
         meta_path = target_dir / "meta.json"
