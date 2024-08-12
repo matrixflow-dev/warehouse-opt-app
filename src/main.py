@@ -89,13 +89,104 @@ async def get_map_configs(offset: int = Query(0, ge=0), limit: int = Query(10, g
 
 @app.get("/api/stocks")
 async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
-    total_stocks = len(stocks)
-    paginated_stocks = stocks[offset:offset+limit]
+    sorted_dirs = sorted(stocks_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_stocks = len(sorted_meta_paths)
+    paginated_stocks_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_map_configs = []
+    for p in paginated_stocks_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_map_configs.append(d)
+        except Exception as e:
+            logger.info(f"{e}")
+            logger.info(f"cannot get path: {p}")
     response_data = {
         "total": total_stocks,
-        "stocks": paginated_stocks
+        "stocks":paginated_map_configs
     }
     return JSONResponse(content=response_data)
+
+@app.post("/api/stocks")
+async def add_stock(
+    name: str = Form(...),
+    description: str = Form(...),
+    file: UploadFile = File(...)
+):
+    try:
+        sorted_dirs = sorted(stocks_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+        if len(sorted_dirs) > 0:
+            highest_number = int(sorted_dirs[0].name)
+            next_number = highest_number + 1
+            next_number = str(next_number).zfill(4)
+        else:
+            next_number = "0001"
+
+        target_dir = stocks_dir / next_number
+        target_dir.mkdir()
+        try:
+            json_data = json.load(file.file)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON file")
+           
+        file_path = target_dir / "info.json"
+        with open(file_path, "w") as f:
+            json.dump(json_data, f, indent=4)
+        
+        meta_info = {
+            "id": next_number,
+            "name": name,
+            "description": description,
+            "created_at": get_jst_now(format="record")
+        }
+        meta_path = target_dir / "meta.json"
+        with open(meta_path, "w") as f:
+            json.dump(meta_info, f, indent=4)
+        
+        return JSONResponse(content={"message": "File uploaded successfully", "id": next_number})
+
+    except Exception as e:
+        logger.error("Error occurred while uploading the file: %s", str(e))
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+@app.get("/api/stocks/{id}")
+async def get_stock(id: str):
+    try:
+
+        target_dir = stocks_dir / id
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Stock Information not found")
+        
+        meta_path = target_dir / "meta.json"
+        if not meta_path.exists():
+            raise HTTPException(status_code=404, detail="Meta information not found")
+        
+        with open(meta_path, "r") as f:
+            map_config = json.load(f)
+        
+        return JSONResponse(content={"stock": map_config})
+    
+    except Exception as e:
+        logger.error("Error occurred while retrieving the Stock Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to retrieve Stock Information")
+
+@app.delete("/api/stocks/{id}")
+async def delete_stock(id: str):
+    try:
+        target_dir = stocks_dir / id
+        
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Stock Information not found")
+        
+        shutil.rmtree(target_dir)
+        return JSONResponse(content={"message": f"Stock Information {id} has been deleted successfully."})
+    
+    except Exception as e:
+        logger.error("Error occurred while deleting the Stock Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete Stock Information")
 
 @app.get("/api/picking-lists")
 async def get_picking_lists():
@@ -227,7 +318,7 @@ async def start_process(data: Dict):
         current_dir / "behavior_opt/mca/mca.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
-        "-s", stocks_dir / f"{stock_id}.json", 
+        "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-o", result_dir
     ]
@@ -292,7 +383,7 @@ async def start_visualize(data: Dict):
         current_dir / "behavior_opt/visualizer.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
-        "-s", stocks_dir / f"{stock_id}.json", 
+        "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-B", result_dir / "output.csv",
         "-o", output_gif_path
