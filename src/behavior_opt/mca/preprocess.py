@@ -13,6 +13,7 @@ from behavior_opt.utils.file_io import (
 
 TIMEOUT_MAX = 5000
 
+#FIELD_TYPE = dict(empty=0, rack=1, start=2, goal=3, agent=4, item=5, end_point=6)
 
 # mapの作成
 def _create_map(world: World, output_dir: Path) -> None:

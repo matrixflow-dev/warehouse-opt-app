@@ -51,14 +51,24 @@
             aria-controls="map-management-table"></b-pagination>
 
         <!-- 詳細モーダル -->
-        <b-modal v-if="selectedMapConfig" @hide="selectedMapConfig = null" title="マップ設定詳細" :visible="showModal">
+        <b-modal v-if="selectedMapConfig" @hide="selectedMapConfig = null" title="マップ設定詳細" :visible="showModal"
+            modal-class="custom-modal">
             <p><strong>ID:</strong> {{ selectedMapConfig.id }}</p>
             <p><strong>名前:</strong> {{ selectedMapConfig.name }}</p>
             <p><strong>説明:</strong> {{ selectedMapConfig.description }}</p>
             <p><strong>作成日時:</strong> {{ selectedMapConfig.created_at }}</p>
 
-            <!-- 削除ボタン -->
-            <b-button variant="danger" @click="deleteMapConfig" class="mt-3">削除</b-button>
+            <!-- 添付されたHTMLをiframeで表示 -->
+            <iframe v-if="htmlContentUrl" :src="htmlContentUrl" width="100%" height="100%"></iframe>
+
+            <!-- フッター -->
+            <template #modal-footer>
+                <div class="d-flex justify-content-between w-100">
+                    <b-button variant="danger" @click="deleteMapConfig" class="mt-3">削除</b-button>
+                    <b-button @click="showModal = false" class="mt-3">閉じる</b-button>
+                </div>
+            </template>
+            
         </b-modal>
     </div>
 </template>
@@ -89,6 +99,7 @@ export default {
             alertVariant: 'success', // アラートのバリアントを格納
             selectedMapConfig: null, // 選択されたマップ設定の詳細データを格納
             showModal: false, // モーダルの表示/非表示を制御
+            htmlContentUrl: '', // rack_layout.htmlのURLを格納
         };
     },
     mounted() {
@@ -109,8 +120,8 @@ export default {
                 }
             })
                 .then(response => {
-                    this.mapConfigs = response.data.mapConfigs; // サーバーがマップ設定リストを `mapConfigs` として返すと仮定
-                    this.totalMapConfigs = response.data.total; // サーバーが総マップ設定数を `total` として返すと仮定
+                    this.mapConfigs = response.data.mapConfigs;
+                    this.totalMapConfigs = response.data.total;
                 })
                 .catch(error => {
                     console.error('マップ管理情報の取得に失敗しました:', error);
@@ -135,8 +146,8 @@ export default {
                 .then(response => {
                     console.log(response)
                     this.showAlert('ファイルが正常にアップロードされました。', 'success');
-                    this.fetchMapConfigs(); // アップロード後にテーブルを更新
-                    this.resetForm(); // フォームをリセットして非表示にする
+                    this.fetchMapConfigs();
+                    this.resetForm();
                 })
                 .catch(error => {
                     console.error('ファイルのアップロードに失敗しました:', error);
@@ -157,7 +168,8 @@ export default {
         onRowClicked(item) {
             axios.get(`/api/map-configs/${item.id}`)
                 .then(response => {
-                    this.selectedMapConfig = response.data;
+                    this.selectedMapConfig = response.data.mapConfig;
+                    this.htmlContentUrl = `/api/map-configs/${item.id}/rack-layout`; // Generate iframe URL
                     this.showModal = true;
                 })
                 .catch(error => {
@@ -173,7 +185,7 @@ export default {
                 .then(response => {
                     console.log(response)
                     this.showAlert('マップ設定が削除されました。', 'success');
-                    this.fetchMapConfigs(); // 削除後にテーブルを更新
+                    this.fetchMapConfigs();
                     this.selectedMapConfig = null;
                     this.showModal = false;
                 })
@@ -189,5 +201,22 @@ export default {
 <style>
 .table-row {
     cursor: pointer;
+}
+
+.custom-modal .modal-dialog {
+    max-width: 60%;
+}
+
+.custom-modal .modal-body {
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    /* モーダルの高さの70%をiframeに割り当て */
+    padding: 10px;
+}
+
+.custom-modal iframe {
+    flex-grow: 1;
+    border: none;
 }
 </style>

@@ -138,6 +138,24 @@ async def upload_map_config(
         logger.error("Error occurred while uploading the file: %s", str(e))
         raise HTTPException(status_code=500, detail="File upload failed")
     
+@app.get("/api/map-configs/{id}/rack-layout")
+async def get_rack_layout(id: str):
+    try:
+        # Construct the path to the map configuration directory
+        target_dir = map_dir / id
+        
+        # Load the rack_layout.html file from the directory
+        rack_layout_path = target_dir / "rack_layout.html"
+        if not rack_layout_path.exists():
+            raise HTTPException(status_code=404, detail="rack_layout.html not found")
+        
+        # Serve the rack_layout.html file
+        return FileResponse(path=str(rack_layout_path), media_type="text/html")
+    
+    except Exception as e:
+        logger.error(f"Failed to retrieve rack_layout.html: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve rack_layout.html")
+
 @app.get("/api/map-configs/{id}")
 async def get_map_config(id: str):
     try:
@@ -156,7 +174,8 @@ async def get_map_config(id: str):
         with open(meta_path, "r") as f:
             map_config = json.load(f)
         
-        return JSONResponse(content=map_config)
+        # Return the map configuration data without HTML content
+        return JSONResponse(content={"mapConfig": map_config})
     
     except Exception as e:
         logger.error("Error occurred while retrieving the map configuration: %s", str(e))
@@ -200,7 +219,7 @@ async def start_process(data: Dict):
         "python3", 
         current_dir / "behavior_opt/mca/mca.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
-        "-m", map_dir / f"{map_config_id}.json", 
+        "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-o", result_dir
@@ -265,7 +284,7 @@ async def start_visualize(data: Dict):
         "python3", 
         current_dir / "behavior_opt/visualizer.py", 
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
-        "-m", map_dir / f"{map_config_id}.json", 
+        "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}.json", 
         "-p", picking_list_dir / f"{picking_list_id}.csv", 
         "-B", result_dir / "output.csv",
