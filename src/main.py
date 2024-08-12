@@ -137,6 +137,30 @@ async def upload_map_config(
     except Exception as e:
         logger.error("Error occurred while uploading the file: %s", str(e))
         raise HTTPException(status_code=500, detail="File upload failed")
+    
+@app.get("/api/map-configs/{id}")
+async def get_map_config(id: str):
+    try:
+        # Construct the path to the map configuration directory
+        target_dir = map_dir / id
+        
+        # Check if the directory exists
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Map configuration not found")
+        
+        # Load the meta.json file from the directory
+        meta_path = target_dir / "meta.json"
+        if not meta_path.exists():
+            raise HTTPException(status_code=404, detail="Meta information not found")
+        
+        with open(meta_path, "r") as f:
+            map_config = json.load(f)
+        
+        return JSONResponse(content=map_config)
+    
+    except Exception as e:
+        logger.error("Error occurred while retrieving the map configuration: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to retrieve map configuration")
 
 async def run_subprocess(command):
     process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

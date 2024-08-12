@@ -9,7 +9,8 @@
         </b-button>
 
         <!-- アラートメッセージ -->
-        <b-alert :show="alertVisible" :variant="alertVariant" dismissible @dismissed="alertVisible = false" class="mb-3">
+        <b-alert :show="alertVisible" :variant="alertVariant" dismissible @dismissed="alertVisible = false"
+            class="mb-3">
             {{ alertMessage }}
         </b-alert>
 
@@ -30,9 +31,32 @@
 
         <rack-map />
 
-        <b-table :items="mapConfigs" :fields="fields"></b-table>
+        <!-- テーブル -->
+        <b-table :items="mapConfigs" :fields="fields" @row-clicked="onRowClicked">
+            <template #cell(id)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.id }}</span>
+            </template>
+            <template #cell(name)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.name }}</span>
+            </template>
+            <template #cell(description)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.description }}</span>
+            </template>
+            <template #cell(created_at)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.created_at }}</span>
+            </template>
+        </b-table>
+
         <b-pagination v-model="currentPage" :total-rows="totalMapConfigs" :per-page="perPage" @change="fetchMapConfigs"
             aria-controls="map-management-table"></b-pagination>
+
+        <!-- 詳細モーダル -->
+        <b-modal v-if="selectedMapConfig" @hide="selectedMapConfig = null" title="マップ設定詳細" :visible="showModal">
+            <p><strong>ID:</strong> {{ selectedMapConfig.id }}</p>
+            <p><strong>名前:</strong> {{ selectedMapConfig.name }}</p>
+            <p><strong>説明:</strong> {{ selectedMapConfig.description }}</p>
+            <p><strong>作成日時:</strong> {{ selectedMapConfig.created_at }}</p>
+        </b-modal>
     </div>
 </template>
 
@@ -60,6 +84,8 @@ export default {
             alertVisible: false, // アラートの表示/非表示を制御
             alertMessage: '', // アラートメッセージを格納
             alertVariant: 'success', // アラートのバリアントを格納
+            selectedMapConfig: null, // 選択されたマップ設定の詳細データを格納
+            showModal: false, // モーダルの表示/非表示を制御
         };
     },
     mounted() {
@@ -124,7 +150,23 @@ export default {
             this.alertMessage = message;
             this.alertVariant = variant;
             this.alertVisible = true;
-        }
+        },
+        onRowClicked(item) {
+            axios.get(`/api/map-configs/${item.id}`)
+                .then(response => {
+                    this.selectedMapConfig = response.data;
+                    this.showModal = true;
+                })
+                .catch(error => {
+                    console.error('詳細情報の取得に失敗しました:', error);
+                });
+        },
     }
 }
 </script>
+
+<style>
+.table-row {
+    cursor: pointer;
+}
+</style>
