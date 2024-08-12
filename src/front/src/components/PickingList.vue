@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h1>マップ管理</h1>
-        <p>マップ管理の情報を表示します。</p>
+        <h1>ピッキングリスト管理</h1>
+        <p>ピッキングリストを管理します。</p>
 
         <!-- 新規追加アイコン -->
         <b-button variant="success" @click="toggleForm" class="mb-3" v-b-tooltip.hover title="新規追加">
@@ -14,25 +14,25 @@
             {{ alertMessage }}
         </b-alert>
 
-        <!-- JSONファイルアップロードエリア（カード表示） -->
+        <!-- フォーム表示（カード形式） -->
         <b-card v-if="showForm" class="mb-3">
-            <b-form @submit.prevent="uploadJsonFile">
+            <b-form @submit.prevent="addPickingList">
                 <b-form-group label="名前">
                     <b-form-input v-model="name" placeholder="名前を入力"></b-form-input>
                 </b-form-group>
                 <b-form-group label="説明">
                     <b-form-input v-model="description" placeholder="説明を入力"></b-form-input>
                 </b-form-group>
-                <b-form-file v-model="jsonFile" accept=".json" placeholder="config.jsonファイルを選択..."
-                    browse-text="ファイルを選択"></b-form-file>
+                <b-form-group label="JSONファイル">
+                    <b-form-file v-model="csvFile" accept=".csv" placeholder="list.csvファイルを選択..."
+                        browse-text="ファイルを選択"></b-form-file>
+                </b-form-group>
                 <b-button type="submit" variant="primary" class="mt-2">追加</b-button>
             </b-form>
         </b-card>
 
-        <rack-map />
-
         <!-- テーブル -->
-        <b-table :items="mapConfigs" :fields="fields" @row-clicked="onRowClicked">
+        <b-table :items="pickingLists" :fields="fields" @row-clicked="onRowClicked">
             <template #cell(id)="data">
                 <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.id }}</span>
             </template>
@@ -47,28 +47,24 @@
             </template>
         </b-table>
 
-        <b-pagination v-model="currentPage" :total-rows="totalMapConfigs" :per-page="perPage" @change="fetchMapConfigs"
-            aria-controls="map-management-table"></b-pagination>
+        <b-pagination v-model="currentPage" :total-rows="totalPickingLists" :per-page="perPage"
+            @change="fetchPickingLists" aria-controls="picking-list-table"></b-pagination>
 
         <!-- 詳細モーダル -->
-        <b-modal v-if="selectedMapConfig" @hide="selectedMapConfig = null" title="マップ設定詳細" :visible="showModal"
+        <b-modal v-if="selectedPickingList" @hide="selectedPickingList = null" title="ピッキングリスト詳細" :visible="showModal"
             modal-class="custom-modal">
-            <p><strong>ID:</strong> {{ selectedMapConfig.id }}</p>
-            <p><strong>名前:</strong> {{ selectedMapConfig.name }}</p>
-            <p><strong>説明:</strong> {{ selectedMapConfig.description }}</p>
-            <p><strong>作成日時:</strong> {{ selectedMapConfig.created_at }}</p>
-
-            <!-- 添付されたHTMLをiframeで表示 -->
-            <iframe v-if="htmlContentUrl" :src="htmlContentUrl" width="100%" height="100%"></iframe>
+            <p><strong>ID:</strong> {{ selectedPickingList.id }}</p>
+            <p><strong>名前:</strong> {{ selectedPickingList.name }}</p>
+            <p><strong>説明:</strong> {{ selectedPickingList.description }}</p>
+            <p><strong>作成日時:</strong> {{ selectedPickingList.created_at }}</p>
 
             <!-- フッター -->
             <template #modal-footer>
                 <div class="d-flex justify-content-between w-100">
-                    <b-button variant="danger" @click="deleteMapConfig" class="mt-3">削除</b-button>
+                    <b-button variant="danger" @click="deletePickingList" class="mt-3">削除</b-button>
                     <b-button @click="showModal = false" class="mt-3">閉じる</b-button>
                 </div>
             </template>
-
         </b-modal>
     </div>
 </template>
@@ -77,11 +73,11 @@
 import axios from 'axios';
 
 export default {
-    name: 'MapManagement',
+    name: 'PickingList',
     data() {
         return {
-            mapConfigs: [],
-            totalMapConfigs: 0,
+            pickingLists: [],
+            totalPickingLists: 0,
             fields: [
                 { key: 'id', label: 'ID' },
                 { key: 'name', label: '名前' },
@@ -90,74 +86,72 @@ export default {
             ],
             currentPage: 1,
             perPage: 10,
-            jsonFile: null,  // JSONファイルを格納
-            name: '', // 名前のデータを格納
-            description: '', // 説明のデータを格納
-            showForm: false, // フォームの表示/非表示を制御
-            alertVisible: false, // アラートの表示/非表示を制御
-            alertMessage: '', // アラートメッセージを格納
-            alertVariant: 'success', // アラートのバリアントを格納
-            selectedMapConfig: null, // 選択されたマップ設定の詳細データを格納
-            showModal: false, // モーダルの表示/非表示を制御
-            htmlContentUrl: '', // rack_layout.htmlのURLを格納
+            name: '',
+            description: '',
+            csvFile: null,
+            showForm: false,
+            alertVisible: false,
+            alertMessage: '',
+            alertVariant: 'success',
+            selectedPickingList: null,
+            showModal: false,
         };
     },
     mounted() {
-        this.fetchMapConfigs();
+        this.fetchPickingLists();
     },
     methods: {
         toggleForm() {
             this.showForm = !this.showForm;
         },
-        fetchMapConfigs() {
+        fetchPickingLists() {
             const offset = (this.currentPage - 1) * this.perPage;
             const limit = this.perPage;
 
-            axios.get('/api/map-configs', {
+            axios.get('/api/picking-lists', {
                 params: {
                     offset: offset,
                     limit: limit,
                 }
             })
                 .then(response => {
-                    this.mapConfigs = response.data.mapConfigs;
-                    this.totalMapConfigs = response.data.total;
+                    this.pickingLists = response.data.pickingLists; // サーバーがピッキングリストを `pickingLists` として返すと仮定
+                    this.totalPickingLists = response.data.total; // サーバーが総ピッキングリスト数を `total` として返すと仮定
                 })
                 .catch(error => {
-                    console.error('マップ管理情報の取得に失敗しました:', error);
+                    console.error('ピッキングリストの取得に失敗しました:', error);
                 });
         },
-        uploadJsonFile() {
-            if (!this.jsonFile) {
-                this.showAlert('ファイルを選択してください', 'danger');
+        addPickingList() {
+            if (!this.csvFile) {
+                this.showAlert('CSVファイルを選択してください', 'danger');
                 return;
             }
 
             const formData = new FormData();
-            formData.append('file', this.jsonFile);
             formData.append('name', this.name);
             formData.append('description', this.description);
+            formData.append('file', this.csvFile);
 
-            axios.post('/api/map-configs', formData, {
+            axios.post('/api/picking-lists', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
             })
-                .then(response => {
-                    console.log(response)
-                    this.showAlert('ファイルが正常にアップロードされました。', 'success');
-                    this.fetchMapConfigs();
+                .then(() => {
+                    this.showAlert('ピッキングリストが正常に追加されました。', 'success');
+                    this.fetchPickingLists();
                     this.resetForm();
                 })
                 .catch(error => {
-                    console.error('ファイルのアップロードに失敗しました:', error);
-                    this.showAlert('ファイルのアップロードに失敗しました。', 'danger');
+                    console.error('ピッキングリストの追加に失敗しました:', error);
+                    this.showAlert('ピッキングリストの追加に失敗しました。', 'danger');
                 });
         },
         resetForm() {
-            this.jsonFile = null;
             this.name = '';
             this.description = '';
+            this.csvFile = null;
             this.showForm = false;
         },
         showAlert(message, variant) {
@@ -166,32 +160,30 @@ export default {
             this.alertVisible = true;
         },
         onRowClicked(item) {
-            axios.get(`/api/map-configs/${item.id}`)
+            axios.get(`/api/picking-lists/${item.id}`)
                 .then(response => {
-                    this.selectedMapConfig = response.data.mapConfig;
-                    this.htmlContentUrl = `/api/map-configs/${item.id}/rack-layout`; // Generate iframe URL
+                    this.selectedPickingList = response.data.pickingList;
                     this.showModal = true;
                 })
                 .catch(error => {
                     console.error('詳細情報の取得に失敗しました:', error);
                 });
         },
-        deleteMapConfig() {
-            if (!this.selectedMapConfig) return;
+        deletePickingList() {
+            if (!this.selectedPickingList) return;
 
-            const id = this.selectedMapConfig.id;
+            const id = this.selectedPickingList.id;
 
-            axios.delete(`/api/map-configs/${id}`)
-                .then(response => {
-                    console.log(response)
-                    this.showAlert('マップ設定が削除されました。', 'success');
-                    this.fetchMapConfigs();
-                    this.selectedMapConfig = null;
+            axios.delete(`/api/picking-lists/${id}`)
+                .then(() => {
+                    this.showAlert('ピッキングリストが削除されました。', 'success');
+                    this.fetchPickingLists();
+                    this.selectedPickingList = null;
                     this.showModal = false;
                 })
                 .catch(error => {
-                    console.error('マップ設定の削除に失敗しました:', error);
-                    this.showAlert('マップ設定の削除に失敗しました。', 'danger');
+                    console.error('ピッキングリストの削除に失敗しました:', error);
+                    this.showAlert('ピッキングリストの削除に失敗しました。', 'danger');
                 });
         },
     }
@@ -211,12 +203,6 @@ export default {
     display: flex;
     flex-direction: column;
     height: 80vh;
-    /* モーダルの高さの70%をiframeに割り当て */
     padding: 10px;
-}
-
-.custom-modal iframe {
-    flex-grow: 1;
-    border: none;
 }
 </style>

@@ -35,7 +35,7 @@
                 <b-form-group label="在庫情報">
                     <b-form-select v-model="selectedStock">
                         <b-form-select-option v-for="stock in stockOptions" :key="stock.id" :value="stock.id">
-                            {{ stock.id }} - {{ stock.created_at }}
+                            {{ stock.name }} - {{ stock.created_at }}
                         </b-form-select-option>
                     </b-form-select>
                 </b-form-group>
@@ -44,8 +44,8 @@
             <b-col cols="5">
                 <b-form-group label="ピッキングリスト">
                     <b-form-select v-model="selectedPickingList">
-                        <b-form-select-option v-for="list in pickingListOptions" :key="list" :value="list">
-                            {{ list }}
+                        <b-form-select-option v-for="list in pickingListOptions" :key="list.id" :value="list.id">
+                            {{ list.name }} - {{ list.created_at }}
                         </b-form-select-option>
                     </b-form-select>
                 </b-form-group>
@@ -102,7 +102,7 @@ export default {
                 this.agentOptions = agentsRes.data;
                 this.mapConfigOptions = mapConfigsRes.data.mapConfigs; // mapConfigs配列を取得
                 this.stockOptions = stocksRes.data.stocks;
-                this.pickingListOptions = pickingListsRes.data;
+                this.pickingListOptions = pickingListsRes.data.pickingLists;
             }).catch(error => {
                 this.errorMessage = '予期せぬエラーが発生しました。管理者に問い合わせてください: ' + error.message;
             });

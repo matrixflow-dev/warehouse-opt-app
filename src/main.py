@@ -42,51 +42,13 @@ app.mount("/front", StaticFiles(directory=front_dir), name="front")
 app.mount("/js", StaticFiles(directory=front_dir / "js"), name="js")
 app.mount("/css", StaticFiles(directory=front_dir / "css"), name="css")
 
-@app.get("/main")
-async def get():
-    return FileResponse(front_dir / "index.html")
-
 @app.get("/")
 async def index():
     return FileResponse(front_dir / "index.html")
 
 agents = ["0001", "0002", "0003"]
-stocks = [
-    {"id": "0001", "created_at": "2024年10月7日10:12:23", "description": "ああああ"},
-    {"id": "0002", "created_at": "2024年10月7日11:12:23", "description": "いいいい"},
-    {"id": "0003", "created_at": "2024年10月7日12:12:23", "description": "うううう"},
-    # さらに多くの在庫データが続く...
-]
-picking_lists = ["0001", "0002", "0003"]
 
-@app.get("/api/agents")
-async def get_agents():
-    return JSONResponse(content=agents)
-
-@app.get("/api/map-configs")
-async def get_map_configs(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
-
-    sorted_dirs = sorted(map_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
-    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
-
-    total_map_configs = len(sorted_meta_paths)
-    paginated_map_paths = sorted_meta_paths[offset:offset+limit]
-
-    paginated_map_configs = []
-    for p in paginated_map_paths:
-        try:
-            with open(p) as f:
-                d = json.load(f)
-                paginated_map_configs.append(d)
-        except Exception as e:
-            logger.info(f"cannot get path: {p}")
-    
-    response_data = {
-        "total": total_map_configs,
-        "mapConfigs": paginated_map_configs
-    }
-    return JSONResponse(content=response_data)
-
+############### stocks start ##########################
 @app.get("/api/stocks")
 async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
     sorted_dirs = sorted(stocks_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
@@ -95,18 +57,18 @@ async def get_stocks(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1))
     total_stocks = len(sorted_meta_paths)
     paginated_stocks_paths = sorted_meta_paths[offset:offset+limit]
 
-    paginated_map_configs = []
+    paginated_stocks = []
     for p in paginated_stocks_paths:
         try:
             with open(p) as f:
                 d = json.load(f)
-                paginated_map_configs.append(d)
+                paginated_stocks.append(d)
         except Exception as e:
             logger.info(f"{e}")
             logger.info(f"cannot get path: {p}")
     response_data = {
         "total": total_stocks,
-        "stocks":paginated_map_configs
+        "stocks": paginated_stocks
     }
     return JSONResponse(content=response_data)
 
@@ -155,7 +117,6 @@ async def add_stock(
 @app.get("/api/stocks/{id}")
 async def get_stock(id: str):
     try:
-
         target_dir = stocks_dir / id
         if not target_dir.exists() or not target_dir.is_dir():
             raise HTTPException(status_code=404, detail="Stock Information not found")
@@ -165,9 +126,9 @@ async def get_stock(id: str):
             raise HTTPException(status_code=404, detail="Meta information not found")
         
         with open(meta_path, "r") as f:
-            map_config = json.load(f)
+            stock_info = json.load(f)
         
-        return JSONResponse(content={"stock": map_config})
+        return JSONResponse(content={"stock": stock_info})
     
     except Exception as e:
         logger.error("Error occurred while retrieving the Stock Information: %s", str(e))
@@ -188,11 +149,139 @@ async def delete_stock(id: str):
         logger.error("Error occurred while deleting the Stock Information: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to delete Stock Information")
 
-@app.get("/api/picking-lists")
-async def get_picking_lists():
-    return JSONResponse(content=picking_lists)
+############### stocks end ##########################
 
-@app.post("/api/map-configs/upload")
+@app.get("/api/agents")
+async def get_agents():
+    return JSONResponse(content=agents)
+
+@app.get("/api/picking-lists")
+async def get_picking_lists(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+    
+    sorted_dirs = sorted(picking_list_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_lists = len(sorted_meta_paths)
+    paginated_list_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_stocks = []
+    for p in paginated_list_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_stocks.append(d)
+        except Exception as e:
+            logger.info(f"{e}")
+            logger.info(f"cannot get path: {p}")
+
+    response_data = {
+        "total": total_lists,
+        "pickingLists": paginated_stocks
+    }
+    return JSONResponse(content=response_data)
+
+
+@app.post("/api/picking-lists")
+async def add_picking_list(
+    name: str = Form(...),
+    description: str = Form(...),
+    file: UploadFile = File(...)
+):
+    try:
+        sorted_dirs = sorted(picking_list_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+        if len(sorted_dirs) > 0:
+            highest_number = int(sorted_dirs[0].name)
+            next_number = highest_number + 1
+            next_number = str(next_number).zfill(4)
+        else:
+            next_number = "0001"
+
+        target_dir = picking_list_dir / next_number
+        target_dir.mkdir()
+        target_path = target_dir / "list.csv"
+        with open(target_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+        
+        meta_info = {
+            "id": next_number,
+            "name": name,
+            "description": description,
+            "created_at": get_jst_now(format="record")
+        }
+        meta_path = target_dir / "meta.json"
+        with open(meta_path, "w") as f:
+            json.dump(meta_info, f, indent=4)
+        
+        return JSONResponse(content={"message": "Picking list uploaded successfully", "id": next_number})
+
+    except Exception as e:
+        logger.error("Error occurred while uploading the file: %s", str(e))
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+@app.get("/api/picking-lists/{id}")
+async def get_picking_list(id: str):
+    try:
+        target_dir = picking_list_dir / id
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="picking-lists not found")
+        
+        meta_path = target_dir / "meta.json"
+        if not meta_path.exists():
+            raise HTTPException(status_code=404, detail="Meta information not found")
+        
+        with open(meta_path, "r") as f:
+            picking_lists = json.load(f)
+        
+        return JSONResponse(content={"pickingList": picking_lists})
+    
+    except Exception as e:
+        logger.error("Error occurred while retrieving the picking-lists: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to retrieve picking-lists")
+
+@app.delete("/api/picking-lists/{id}")
+async def delete_picking_list(id: str):
+    try:
+        target_dir = picking_list_dir / id
+        
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="picking-lists not found")
+        
+        shutil.rmtree(target_dir)
+        return JSONResponse(content={"message": f"picking-lists {id} has been deleted successfully."})
+    
+    except Exception as e:
+        logger.error("Error occurred while deleting the picking-lists: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete picking-lists")
+
+############### map-configs start ##########################
+
+@app.get("/api/map-configs")
+async def get_map_configs(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+
+    sorted_dirs = sorted(map_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_map_configs = len(sorted_meta_paths)
+    paginated_map_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_map_configs = []
+    for p in paginated_map_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_map_configs.append(d)
+        except Exception as e:
+            logger.info(f"cannot get path: {p}")
+    
+    response_data = {
+        "total": total_map_configs,
+        "mapConfigs": paginated_map_configs
+    }
+    return JSONResponse(content=response_data)
+
+
+@app.post("/api/map-configs")
 async def upload_map_config(
     file: UploadFile = File(...),
     name: str = Form(...),
@@ -235,36 +324,15 @@ async def upload_map_config(
     except Exception as e:
         logger.error("Error occurred while uploading the file: %s", str(e))
         raise HTTPException(status_code=500, detail="File upload failed")
-    
-@app.get("/api/map-configs/{id}/rack-layout")
-async def get_rack_layout(id: str):
-    try:
-        # Construct the path to the map configuration directory
-        target_dir = map_dir / id
-        
-        # Load the rack_layout.html file from the directory
-        rack_layout_path = target_dir / "rack_layout.html"
-        if not rack_layout_path.exists():
-            raise HTTPException(status_code=404, detail="rack_layout.html not found")
-        
-        # Serve the rack_layout.html file
-        return FileResponse(path=str(rack_layout_path), media_type="text/html")
-    
-    except Exception as e:
-        logger.error(f"Failed to retrieve rack_layout.html: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to retrieve rack_layout.html")
 
 @app.get("/api/map-configs/{id}")
 async def get_map_config(id: str):
     try:
-        # Construct the path to the map configuration directory
         target_dir = map_dir / id
-        
-        # Check if the directory exists
+
         if not target_dir.exists() or not target_dir.is_dir():
             raise HTTPException(status_code=404, detail="Map configuration not found")
-        
-        # Load the meta.json file from the directory
+    
         meta_path = target_dir / "meta.json"
         if not meta_path.exists():
             raise HTTPException(status_code=404, detail="Meta information not found")
@@ -272,12 +340,23 @@ async def get_map_config(id: str):
         with open(meta_path, "r") as f:
             map_config = json.load(f)
         
-        # Return the map configuration data without HTML content
         return JSONResponse(content={"mapConfig": map_config})
     
     except Exception as e:
         logger.error("Error occurred while retrieving the map configuration: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to retrieve map configuration")
+
+@app.get("/api/map-configs/{id}/rack-layout")
+async def get_rack_layout(id: str):
+    try:
+        target_dir = map_dir / id
+        rack_layout_path = target_dir / "rack_layout.html"
+        if not rack_layout_path.exists():
+            raise HTTPException(status_code=404, detail="rack_layout.html not found")
+        return FileResponse(path=str(rack_layout_path), media_type="text/html")
+    except Exception as e:
+        logger.error(f"Failed to retrieve rack_layout.html: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve rack_layout.html")
     
 @app.delete("/api/map-configs/{id}")
 async def delete_map_config(id: str):
@@ -293,6 +372,11 @@ async def delete_map_config(id: str):
     except Exception as e:
         logger.error("Error occurred while deleting the map configuration: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to delete map configuration")
+
+############### map-configs end ##########################
+
+
+############### home(main) api start ##########################
 
 async def run_subprocess(command):
     process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -319,7 +403,7 @@ async def start_process(data: Dict):
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
-        "-p", picking_list_dir / f"{picking_list_id}.csv", 
+        "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
         "-o", result_dir
     ]
 
@@ -384,7 +468,7 @@ async def start_visualize(data: Dict):
         "-a", agents_dir / f"{agent_ids[0]}.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
-        "-p", picking_list_dir / f"{picking_list_id}.csv", 
+        "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
         "-B", result_dir / "output.csv",
         "-o", output_gif_path
     ]
@@ -404,6 +488,8 @@ async def start_visualize(data: Dict):
         logger.error("Error occurred: %s", str(e))
         response_data = {"message": str(e)}
         return JSONResponse(status_code=500, content=response_data)
+
+############### home(main) api end ##########################
 
 if __name__ == "__main__":
     import uvicorn

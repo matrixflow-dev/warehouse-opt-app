@@ -7,6 +7,7 @@
         <b-nav-item tag="router-link" to="/">ホーム</b-nav-item>
         <b-nav-item tag="router-link" to="/results">結果</b-nav-item>
         <b-nav-item tag="router-link" to="/inventory">在庫情報</b-nav-item>
+        <b-nav-item tag="router-link" to="/picking-list">ピッキングリスト</b-nav-item>
         <b-nav-item tag="router-link" to="/picker-management">ピッカー管理</b-nav-item>
         <b-nav-item tag="router-link" to="/map-management">マップ管理</b-nav-item>
         <b-nav-item tag="router-link" to="/api-management">API管理</b-nav-item>
