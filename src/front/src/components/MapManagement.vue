@@ -56,6 +56,9 @@
             <p><strong>名前:</strong> {{ selectedMapConfig.name }}</p>
             <p><strong>説明:</strong> {{ selectedMapConfig.description }}</p>
             <p><strong>作成日時:</strong> {{ selectedMapConfig.created_at }}</p>
+
+            <!-- 削除ボタン -->
+            <b-button variant="danger" @click="deleteMapConfig" class="mt-3">削除</b-button>
         </b-modal>
     </div>
 </template>
@@ -159,6 +162,24 @@ export default {
                 })
                 .catch(error => {
                     console.error('詳細情報の取得に失敗しました:', error);
+                });
+        },
+        deleteMapConfig() {
+            if (!this.selectedMapConfig) return;
+
+            const id = this.selectedMapConfig.id;
+
+            axios.delete(`/api/map-configs/${id}`)
+                .then(response => {
+                    console.log(response)
+                    this.showAlert('マップ設定が削除されました。', 'success');
+                    this.fetchMapConfigs(); // 削除後にテーブルを更新
+                    this.selectedMapConfig = null;
+                    this.showModal = false;
+                })
+                .catch(error => {
+                    console.error('マップ設定の削除に失敗しました:', error);
+                    this.showAlert('マップ設定の削除に失敗しました。', 'danger');
                 });
         },
     }

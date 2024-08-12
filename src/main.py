@@ -161,6 +161,21 @@ async def get_map_config(id: str):
     except Exception as e:
         logger.error("Error occurred while retrieving the map configuration: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to retrieve map configuration")
+    
+@app.delete("/api/map-configs/{id}")
+async def delete_map_config(id: str):
+    try:
+        target_dir = map_dir / id
+        
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Map configuration not found")
+        
+        shutil.rmtree(target_dir)
+        return JSONResponse(content={"message": f"Map configuration {id} has been deleted successfully."})
+    
+    except Exception as e:
+        logger.error("Error occurred while deleting the map configuration: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete map configuration")
 
 async def run_subprocess(command):
     process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
