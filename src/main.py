@@ -12,6 +12,7 @@ import subprocess
 import json
 
 from mfutils import generate_random_string, parse_log, parse_route, get_jst_now
+from stock_management import generate_rack_layout
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -117,10 +118,16 @@ async def upload_map_config(
 
         target_dir = map_dir / next_number
         target_dir.mkdir()
-        file_path = target_dir / "config.json"
+        try:
+            json_data = json.load(file.file)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON file")
         
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+        generate_rack_layout(json_data, target_dir)
+        
+        file_path = target_dir / "config.json"
+        with open(file_path, "w") as f:
+            json.dump(json_data, f, indent=4)
         
         meta_info = {
             "id": next_number,
