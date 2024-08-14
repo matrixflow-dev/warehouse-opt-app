@@ -491,6 +491,70 @@ async def get_api():
     return JSONResponse(content=response_data)
 
 
+@app.get("/api/results")
+async def get_results(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+    results_dir = storage_dir / "results"
+    sorted_dirs = sorted(results_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "result.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_results = len(sorted_meta_paths)
+    paginated_results_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_results = []
+    for p in paginated_results_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_results.append(d)
+        except Exception as e:
+            logger.info(f"{e}")
+            logger.info(f"cannot get path: {p}")
+    response_data = {
+        "total": total_results,
+        "results": paginated_results
+    }
+    return JSONResponse(content=response_data)
+
+@app.get("/api/results/{id}")
+async def get_result(id: str):
+    try:
+        results_dir = storage_dir / "results"
+        target_dir = results_dir / id
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Result Information not found")
+        
+        meta_path = target_dir / "result.json"
+        if not meta_path.exists():
+            raise HTTPException(status_code=404, detail="Meta information not found")
+        
+        with open(meta_path, "r") as f:
+            result_info = json.load(f)
+        
+        return JSONResponse(content={"result": result_info})
+    
+    except Exception as e:
+        logger.error("Error occurred while retrieving the Result Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to retrieve Result Information")
+
+@app.delete("/api/results/{id}")
+async def delete_result(id: str):
+    try:
+        results_dir = storage_dir / "results"
+        target_dir = results_dir / id
+        
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Result Information not found")
+        
+        shutil.rmtree(target_dir)
+        return JSONResponse(content={"message": f"Result Information {id} has been deleted successfully."})
+    
+    except Exception as e:
+        logger.error("Error occurred while deleting the Result Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete Result Information")
+
+############### results end ##########################
+
+
 ############### home(main) api start ##########################
 
 async def run_subprocess(command):
@@ -508,7 +572,16 @@ async def start_process(data: Dict):
     if not agent_ids or not map_config_id or not stock_id or not picking_list_id:
         raise HTTPException(status_code=400, detail="All fields are required")
     
-    result_id = generate_random_string()
+
+    sorted_dirs = sorted(stocks_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    if len(sorted_dirs) > 0:
+        highest_number = int(sorted_dirs[0].name)
+        next_number = highest_number + 1
+        next_number = str(next_number).zfill(4)
+    else:
+        next_number = "0001"
+    
+    result_id = next_number
     result_dir = storage_dir / "results" / result_id
     logger.info(f"result_dir: {result_dir}")
     
@@ -541,6 +614,18 @@ async def start_process(data: Dict):
 
         response_data = parse_log(stdout)    
         response_data["result_id"] = result_id
+
+        response_data["req_params"] = {
+            "agent_ids":agent_ids,
+            "map_config_id":map_config_id,
+            "stock_id":stock_id,
+            "picking_list_id":picking_list_id,
+        }
+        response_data["created_at"] = get_jst_now(format="record")
+
+        with open(result_dir / "result.json", "w") as f:
+            json.dump(response_data, f, indent=4)
+    
         return JSONResponse(content=response_data)
 
     except Exception as e:
