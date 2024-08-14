@@ -151,9 +151,7 @@ async def delete_stock(id: str):
 
 ############### stocks end ##########################
 
-@app.get("/api/agents")
-async def get_agents():
-    return JSONResponse(content=agents)
+############### picking-lists start ##########################
 
 @app.get("/api/picking-lists")
 async def get_picking_lists(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
@@ -253,6 +251,15 @@ async def delete_picking_list(id: str):
     except Exception as e:
         logger.error("Error occurred while deleting the picking-lists: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to delete picking-lists")
+
+############### picking-lists end ##########################
+
+
+@app.get("/api/agents")
+async def get_agents():
+    return JSONResponse(content=agents)
+
+
 
 ############### map-configs start ##########################
 
@@ -374,6 +381,15 @@ async def delete_map_config(id: str):
         raise HTTPException(status_code=500, detail="Failed to delete map configuration")
 
 ############### map-configs end ##########################
+
+@app.get("/api/api")
+async def get_api():
+
+    response_data = {
+        "endpoint": "https://warehouse-opt-ai.dev1.matrixflow.net/api/v1/",
+        "secret_key": "8c00d286-f0eb-9b17-ba17-63931c44c884"
+    }
+    return JSONResponse(content=response_data)
 
 
 ############### home(main) api start ##########################
