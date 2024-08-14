@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 current_dir = Path(__file__).resolve().parent
 storage_dir = current_dir / "storage"
-agents_dir = storage_dir / "agents"
+agents_dir = storage_dir / "agents" / "group"
 map_dir = storage_dir / "map_configs"
 stocks_dir = storage_dir / "stocks"
 picking_list_dir = storage_dir / "picking_lists"
@@ -416,7 +416,7 @@ async def start_process(data: Dict):
     command = [
         "python3", 
         current_dir / "behavior_opt/mca/mca.py", 
-        "-a", agents_dir / f"{agent_ids[0]}.csv", 
+        "-a", agents_dir / f"{agent_ids[0]}/agents_info.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
@@ -481,7 +481,7 @@ async def start_visualize(data: Dict):
     command = [
         "python3", 
         current_dir / "behavior_opt/visualizer.py", 
-        "-a", agents_dir / f"{agent_ids[0]}.csv", 
+        "-a", agents_dir / f"{agent_ids[0]}/agents_info.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
