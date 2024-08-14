@@ -10,10 +10,10 @@
 
         <b-row class="justify-content-center">
             <b-col cols="5">
-                <b-form-group label="ピッカー">
-                    <b-form-select v-model="selectedAgents" multiple>
-                        <b-form-select-option v-for="agent in agentOptions" :key="agent" :value="agent">
-                            {{ agent }}
+                <b-form-group label="ピッカーグループ">
+                    <b-form-select v-model="selectedAgents">
+                        <b-form-select-option v-for="agent in agentOptions" :key="agent.id" :value="agent.id">
+                            {{ agent.name }}
                         </b-form-select-option>
                     </b-form-select>
                 </b-form-group>
@@ -81,7 +81,7 @@ export default {
             mapConfigOptions: [],
             stockOptions: [],
             pickingListOptions: [],
-            selectedAgents: [],
+            selectedAgents: "",
             selectedMapConfig: '',
             selectedStock: '',
             selectedPickingList: '',
@@ -99,7 +99,7 @@ export default {
                 axios.get('/api/stocks'),
                 axios.get('/api/picking-lists')
             ]).then(([agentsRes, mapConfigsRes, stocksRes, pickingListsRes]) => {
-                this.agentOptions = agentsRes.data;
+                this.agentOptions = agentsRes.data.agents;
                 this.mapConfigOptions = mapConfigsRes.data.mapConfigs; // mapConfigs配列を取得
                 this.stockOptions = stocksRes.data.stocks;
                 this.pickingListOptions = pickingListsRes.data.pickingLists;

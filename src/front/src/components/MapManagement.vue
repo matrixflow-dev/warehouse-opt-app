@@ -1,7 +1,7 @@
 <template>
     <div>
         <h1>マップ管理</h1>
-        <p>マップ管理の情報を表示します。</p>
+        <p>倉庫のマップを管理します。</p>
 
         <!-- 新規追加アイコン -->
         <b-button variant="success" @click="toggleForm" class="mb-3" v-b-tooltip.hover title="新規追加">

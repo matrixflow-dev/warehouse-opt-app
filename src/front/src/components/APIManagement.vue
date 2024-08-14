@@ -2,7 +2,7 @@
     <b-container class="mt-3">
         <b-card title="API管理" class="mb-3">
             <b-card-text>
-                API管理の情報を表示します。
+                APIを管理します。
             </b-card-text>
             <b-list-group>
                 <b-list-group-item>

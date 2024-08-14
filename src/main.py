@@ -252,12 +252,112 @@ async def delete_picking_list(id: str):
         logger.error("Error occurred while deleting the picking-lists: %s", str(e))
         raise HTTPException(status_code=500, detail="Failed to delete picking-lists")
 
-############### picking-lists end ##########################
-
+############### agents start ##########################
 
 @app.get("/api/agents")
-async def get_agents():
-    return JSONResponse(content=agents)
+async def get_agents(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1)):
+    sorted_dirs = sorted(agents_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+    sorted_meta_paths = [dir_path / "meta.json" for dir_path in sorted_dirs if dir_path.is_dir()]
+
+    total_agents = len(sorted_meta_paths)
+    paginated_agent_paths = sorted_meta_paths[offset:offset+limit]
+
+    paginated_agents = []
+    for p in paginated_agent_paths:
+        try:
+            with open(p) as f:
+                d = json.load(f)
+                paginated_agents.append(d)
+        except Exception as e:
+            logger.info(f"cannot get path: {p}")
+    
+    response_data = {
+        "total": total_agents,
+        "agents": paginated_agents
+    }
+    return JSONResponse(content=response_data)
+
+@app.post("/api/agents")
+async def add_agent(
+    name: str = Form(...),
+    description: str = Form(...),
+    file: UploadFile = File(...)
+):
+    try:
+        sorted_dirs = sorted(agents_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
+        if len(sorted_dirs) > 0:
+            highest_number = int(sorted_dirs[0].name)
+            next_number = highest_number + 1
+            next_number = str(next_number).zfill(4)
+        else:
+            next_number = "0001"
+
+        target_dir = agents_dir / next_number
+        target_dir.mkdir()
+        
+        # Assume the uploaded file is a JSON
+        try:
+            json_data = json.load(file.file)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON file")
+        
+        file_path = target_dir / "info.json"
+        with open(file_path, "w") as f:
+            json.dump(json_data, f, indent=4)
+        
+        meta_info = {
+            "id": next_number,
+            "name": name,
+            "description": description,
+            "created_at": get_jst_now(format="record")
+        }
+        meta_path = target_dir / "meta.json"
+        with open(meta_path, "w") as f:
+            json.dump(meta_info, f, indent=4)
+        
+        return JSONResponse(content={"message": "Agent uploaded successfully", "id": next_number})
+
+    except Exception as e:
+        logger.error("Error occurred while uploading the file: %s", str(e))
+        raise HTTPException(status_code=500, detail="File upload failed")
+
+@app.get("/api/agents/{id}")
+async def get_agent(id: str):
+    try:
+        target_dir = agents_dir / id
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Agent Information not found")
+        
+        meta_path = target_dir / "meta.json"
+        if not meta_path.exists():
+            raise HTTPException(status_code=404, detail="Meta information not found")
+        
+        with open(meta_path, "r") as f:
+            agent_info = json.load(f)
+        
+        return JSONResponse(content={"agent": agent_info})
+    
+    except Exception as e:
+        logger.error("Error occurred while retrieving the Agent Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to retrieve Agent Information")
+
+@app.delete("/api/agents/{id}")
+async def delete_agent(id: str):
+    try:
+        target_dir = agents_dir / id
+        
+        if not target_dir.exists() or not target_dir.is_dir():
+            raise HTTPException(status_code=404, detail="Agent Information not found")
+        
+        shutil.rmtree(target_dir)
+        return JSONResponse(content={"message": f"Agent Information {id} has been deleted successfully."})
+    
+    except Exception as e:
+        logger.error("Error occurred while deleting the Agent Information: %s", str(e))
+        raise HTTPException(status_code=500, detail="Failed to delete Agent Information")
+
+############### agents end ##########################
+
 
 
 
@@ -416,7 +516,7 @@ async def start_process(data: Dict):
     command = [
         "python3", 
         current_dir / "behavior_opt/mca/mca.py", 
-        "-a", agents_dir / f"{agent_ids[0]}/agents_info.csv", 
+        "-a", agents_dir / f"{agent_ids}/agents_info.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
@@ -481,7 +581,7 @@ async def start_visualize(data: Dict):
     command = [
         "python3", 
         current_dir / "behavior_opt/visualizer.py", 
-        "-a", agents_dir / f"{agent_ids[0]}/agents_info.csv", 
+        "-a", agents_dir / f"{agent_ids}/agents_info.csv", 
         "-m", map_dir / f"{map_config_id}/config.json", 
         "-s", stocks_dir / f"{stock_id}/info.json", 
         "-p", picking_list_dir / f"{picking_list_id}/list.csv", 
