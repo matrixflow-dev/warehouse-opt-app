@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Query, UploadFile, File, Form, Body
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -10,6 +10,7 @@ import base64
 import asyncio
 import subprocess
 import json
+import pandas as pd
 
 from mfutils import generate_random_string, parse_log, parse_route, get_jst_now
 from stock_management import generate_rack_layout
@@ -279,9 +280,7 @@ async def get_agents(offset: int = Query(0, ge=0), limit: int = Query(10, ge=1))
 
 @app.post("/api/agents")
 async def add_agent(
-    name: str = Form(...),
-    description: str = Form(...),
-    file: UploadFile = File(...)
+    agent_data: Dict = Body(...)
 ):
     try:
         sorted_dirs = sorted(agents_dir.iterdir(), key=lambda x: int(x.name), reverse=True)
@@ -294,32 +293,27 @@ async def add_agent(
 
         target_dir = agents_dir / next_number
         target_dir.mkdir()
-        
-        # Assume the uploaded file is a JSON
-        try:
-            json_data = json.load(file.file)
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=400, detail="Invalid JSON file")
-        
-        file_path = target_dir / "info.json"
-        with open(file_path, "w") as f:
-            json.dump(json_data, f, indent=4)
-        
+
         meta_info = {
             "id": next_number,
-            "name": name,
-            "description": description,
+            "name": agent_data['name'],
+            "description": agent_data['description'],
             "created_at": get_jst_now(format="record")
         }
         meta_path = target_dir / "meta.json"
         with open(meta_path, "w") as f:
             json.dump(meta_info, f, indent=4)
         
-        return JSONResponse(content={"message": "Agent uploaded successfully", "id": next_number})
+        group = agent_data['group']
+        df = pd.DataFrame(group)
+        df = df[["agent_id","amount","initial_place_row","initial_place_col","name"]]
+        df.to_csv(target_dir / "agents_info.csv", index=False)
+        
+        return JSONResponse(content={"message": "Agent added successfully", "id": next_number})
 
     except Exception as e:
-        logger.error("Error occurred while uploading the file: %s", str(e))
-        raise HTTPException(status_code=500, detail="File upload failed")
+        print(f"Error occurred while adding the agent: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to add agent")
 
 @app.get("/api/agents/{id}")
 async def get_agent(id: str):
@@ -334,7 +328,12 @@ async def get_agent(id: str):
         
         with open(meta_path, "r") as f:
             agent_info = json.load(f)
-        
+
+        df = pd.read_csv(target_dir / "agents_info.csv")
+        group = df.to_dict(orient="records")
+        agent_info["group"] = group
+
+         
         return JSONResponse(content={"agent": agent_info})
     
     except Exception as e:

@@ -23,11 +23,34 @@
                 <b-form-group label="説明">
                     <b-form-input v-model="description" placeholder="説明を入力"></b-form-input>
                 </b-form-group>
-                <b-form-group label="JSONファイル">
-                    <b-form-file v-model="jsonFile" accept=".json" placeholder="picker.jsonファイルを選択..."
-                        browse-text="ファイルを選択"></b-form-file>
-                </b-form-group>
-                <b-button type="submit" variant="primary" class="mt-2">追加</b-button>
+
+                <!-- グループテーブル -->
+                <b-table :items="groups" :fields="groupFields" class="mt-3">
+                    <template #cell(agent_id)="data">
+                        {{ data.item.agent_id }}
+                    </template>
+                    <template #cell(amount)="data">
+                        <b-form-input type="number" v-model="data.item.amount"></b-form-input>
+                    </template>
+                    <template #cell(initial_place_row)="data">
+                        <b-form-input type="number" v-model="data.item.initial_place_row"></b-form-input>
+                    </template>
+                    <template #cell(initial_place_col)="data">
+                        <b-form-input type="number" v-model="data.item.initial_place_col"></b-form-input>
+                    </template>
+                    <template #cell(name)="data">
+                        <b-form-input v-model="data.item.name"></b-form-input>
+                    </template>
+                    <template #cell(actions)="data">
+                        <b-button variant="danger" @click="removeGroup(data.index)">削除</b-button>
+                    </template>
+                </b-table>
+                <b-row>
+                    <b-button @click="addGroup" class="mt-2">グループ追加</b-button>
+                </b-row>
+                <b-row>
+                    <b-button type="submit" variant="primary" class="mt-2">追加</b-button>
+                </b-row>
             </b-form>
         </b-card>
 
@@ -58,6 +81,25 @@
             <p><strong>説明:</strong> {{ selectedPicker.description }}</p>
             <p><strong>作成日時:</strong> {{ selectedPicker.created_at }}</p>
 
+            <!-- グループテーブル -->
+            <b-table :items="selectedPicker.group" :fields="showGroupFields" class="mt-3">
+                <template #cell(agent_id)="data">
+                    {{ data.item.agent_id }}
+                </template>
+                <template #cell(name)="data">
+                    {{ data.item.name }}
+                </template>
+                <template #cell(amount)="data">
+                    {{ data.item.amount }}
+                </template>
+                <template #cell(initial_place_row)="data">
+                    {{ data.item.initial_place_row }}
+                </template>
+                <template #cell(initial_place_col)="data">
+                    {{ data.item.initial_place_col }}
+                </template>
+            </b-table>
+
             <!-- フッター -->
             <template #modal-footer>
                 <div class="d-flex justify-content-between w-100">
@@ -84,17 +126,38 @@ export default {
                 { key: 'description', label: '説明' },
                 { key: 'created_at', label: '作成日時' },
             ],
+            groupFields: [
+                { key: 'agent_id', label: 'エージェントID' },
+                { key: 'name', label: '名前' },
+                { key: 'amount', label: '数量' },
+                { key: 'initial_place_row', label: '初期行' },
+                { key: 'initial_place_col', label: '初期列' },
+                { key: 'actions', label: '操作' }
+            ],
+            showGroupFields: [
+                { key: 'agent_id', label: 'エージェントID' },
+                { key: 'name', label: '名前' },
+                { key: 'amount', label: '数量' },
+                { key: 'initial_place_row', label: '初期行' },
+                { key: 'initial_place_col', label: '初期列' },
+            ],
             currentPage: 1,
             perPage: 10,
             name: '',
-            description: '', // 説明のデータを格納
-            jsonFile: null, // JSONファイルを格納
-            showForm: false, // フォームの表示/非表示を制御
-            alertVisible: false, // アラートの表示/非表示を制御
-            alertMessage: '', // アラートメッセージを格納
-            alertVariant: 'success', // アラートのバリアントを格納
-            selectedPicker: null, // 選択されたピッカー詳細データを格納
-            showModal: false, // モーダルの表示/非表示を制御
+            description: '',
+            groups: [{ // 初期値として1行を用意
+                agent_id: 'agent1',
+                amount: 0,
+                initial_place_row: 0,
+                initial_place_col: 0,
+                name: ''
+            }],
+            showForm: false,
+            alertVisible: false,
+            alertMessage: '',
+            alertVariant: 'success',
+            selectedPicker: null,
+            showModal: false,
         };
     },
     mounted() {
@@ -115,43 +178,45 @@ export default {
                 }
             })
                 .then(response => {
-                    this.pickers = response.data.agents; // サーバーがエージェントリストを `agents` として返すと仮定
-                    this.totalPickers = response.data.total; // サーバーが総エージェント数を `total` として返すと仮定
+                    this.pickers = response.data.agents;
+                    this.totalPickers = response.data.total;
                 })
                 .catch(error => {
-                    console.error('エージェント情報の取得に失敗しました:', error);
+                    console.error('ピッカー情報の取得に失敗しました:', error);
                 });
         },
         addPicker() {
-            if (!this.jsonFile) {
-                this.showAlert('JSONファイルを選択してください', 'danger');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('name', this.name);
-            formData.append('description', this.description);
-            formData.append('file', this.jsonFile);
+            const formData = {
+                name: this.name,
+                description: this.description,
+                group: this.groups
+            };
 
             axios.post('/api/agents', formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
+                    'Content-Type': 'application/json'
                 }
             })
                 .then(() => {
-                    this.showAlert('エージェントが正常に追加されました。', 'success');
+                    this.showAlert('ピッカー情報が正常に追加されました。', 'success');
                     this.fetchPickers();
                     this.resetForm();
                 })
                 .catch(error => {
-                    console.error('エージェントの追加に失敗しました:', error);
-                    this.showAlert('エージェントの追加に失敗しました。', 'danger');
+                    console.error('ピッカー情報の追加に失敗しました:', error);
+                    this.showAlert('ピッカー情報の追加に失敗しました。', 'danger');
                 });
         },
         resetForm() {
             this.name = '';
             this.description = '';
-            this.jsonFile = null;  // Reset the file input
+            this.groups = [{ // 初期値として1行を用意
+                agent_id: 'agent1',
+                amount: 0,
+                initial_place_row: 0,
+                initial_place_col: 0,
+                name: ''
+            }];
             this.showForm = false;
         },
         showAlert(message, variant) {
@@ -176,16 +241,33 @@ export default {
 
             axios.delete(`/api/agents/${id}`)
                 .then(() => {
-                    this.showAlert('エージェントが削除されました。', 'success');
+                    this.showAlert('ピッカー情報が削除されました。', 'success');
                     this.fetchPickers();
                     this.selectedPicker = null;
                     this.showModal = false;
                 })
                 .catch(error => {
-                    console.error('エージェントの削除に失敗しました:', error);
-                    this.showAlert('エージェントの削除に失敗しました。', 'danger');
+                    console.error('ピッカー情報の削除に失敗しました:', error);
+                    this.showAlert('ピッカー情報の削除に失敗しました。', 'danger');
                 });
         },
+        addGroup() {
+            const nextAgentId = `agent${this.groups.length + 1}`;
+            this.groups.push({
+                agent_id: nextAgentId,
+                amount: 0,
+                initial_place_row: 0,
+                initial_place_col: 0,
+                name: ''
+            });
+        },
+        removeGroup(index) {
+            if (this.groups.length > 1) {
+                this.groups.splice(index, 1);
+            } else {
+                this.showAlert('少なくとも1つのグループが必要です。', 'danger');
+            }
+        }
     }
 }
 </script>
@@ -204,5 +286,9 @@ export default {
     flex-direction: column;
     height: 80vh;
     padding: 10px;
+}
+
+.custom-modal .b-table {
+    margin-top: 20px;
 }
 </style>
