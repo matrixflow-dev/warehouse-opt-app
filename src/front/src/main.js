@@ -18,6 +18,8 @@ Vue.use(VueAxios, axios);
 
 Vue.config.productionTip = false;
 
+document.title = "倉庫管理AI"
+
 new Vue({
   router, 
   render: h => h(App),

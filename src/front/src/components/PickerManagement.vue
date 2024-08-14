@@ -24,6 +24,19 @@
                     <b-form-input v-model="description" placeholder="説明を入力"></b-form-input>
                 </b-form-group>
 
+                <!-- エージェントグループのコピー -->
+                <b-form-group label="既存のピッカーグループからコピー">
+                    <b-row>
+                        <b-col cols="8">
+                            <b-form-select v-model="selectedAgentId" :options="agentOptions"
+                                placeholder="ピッカーグループを選択"></b-form-select>
+                        </b-col>
+                        <b-col cols="4">
+                            <b-button @click="copyAgentGroup" class="mt-2">コピー</b-button>
+                        </b-col>
+                    </b-row>
+                </b-form-group>
+
                 <!-- グループテーブル -->
                 <b-table :items="groups" :fields="groupFields" class="mt-3">
                     <template #cell(agent_id)="data">
@@ -158,10 +171,13 @@ export default {
             alertVariant: 'success',
             selectedPicker: null,
             showModal: false,
+            agentOptions: [], // Existing agents for selection
+            selectedAgentId: null, // Selected agent for copying
         };
     },
     mounted() {
         this.fetchPickers();
+        this.fetchAgentOptions(); // Fetch existing agents for the dropdown
     },
     methods: {
         toggleForm() {
@@ -267,9 +283,43 @@ export default {
             } else {
                 this.showAlert('少なくとも1つのグループが必要です。', 'danger');
             }
-        }
+        },
+        fetchAgentOptions() {
+            axios.get('/api/agents')
+                .then(response => {
+                    this.agentOptions = response.data.agents.map(agent => ({
+                        value: agent.id,
+                        text: agent.name
+                    }));
+                })
+                .catch(error => {
+                    console.error('エージェントの取得に失敗しました:', error);
+                });
+        },
+        copyAgentGroup() {
+            if (!this.selectedAgentId) {
+                this.showAlert('コピーするエージェントを選択してください。', 'danger');
+                return;
+            }
+
+            axios.get(`/api/agents/${this.selectedAgentId}`)
+                .then(response => {
+                    this.groups = response.data.agent.group.map((group, index) => ({
+                        agent_id: `agent${index + 1}`,
+                        amount: group.amount,
+                        initial_place_row: group.initial_place_row,
+                        initial_place_col: group.initial_place_col,
+                        name: group.name
+                    }));
+                    this.showAlert('エージェントグループが正常にコピーされました。', 'success');
+                })
+                .catch(error => {
+                    console.error('エージェントグループのコピーに失敗しました:', error);
+                    this.showAlert('エージェントグループのコピーに失敗しました。', 'danger');
+                });
+        },
     }
-}
+};
 </script>
 
 <style>
