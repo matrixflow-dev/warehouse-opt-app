@@ -5,7 +5,7 @@
 
         <!-- テーブル -->
         <b-table :items="results" :fields="fields" @row-clicked="onRowClicked">
-            <template #cell(id)="data">
+            <template #cell(result_id)="data">
                 <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.result_id }}</span>
             </template>
             <template #cell(created_at)="data">
@@ -15,16 +15,20 @@
                 <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.makespan }}</span>
             </template>
             <template #cell(picker_group)="data">
-                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.picker_group }}</span>
-            </template>
-            <template #cell(map_info)="data">
-                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.map_info }}</span>
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{
+                    data.item.req_params.agent.name}}</span>
             </template>
             <template #cell(stock_info)="data">
-                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.stock_info }}</span>
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.stock.name
+                    }}</span>
             </template>
             <template #cell(picking_list)="data">
-                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.picking_list }}</span>
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.picking_list.name
+                    }}</span>
+            </template>
+            <template #cell(map_info)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.map_config.name
+                    }}</span>
             </template>
         </b-table>
 
@@ -34,13 +38,16 @@
         <!-- 詳細モーダル -->
         <b-modal v-if="selectedResult" @hide="selectedResult = null" title="結果詳細" :visible="showModal"
             modal-class="custom-modal">
-            <p><strong>ID:</strong> {{ selectedResult.id }}</p>
+            <p><strong>ID:</strong> {{ selectedResult.result_id }}</p>
             <p><strong>作成日時:</strong> {{ selectedResult.created_at }}</p>
             <p><strong>最大時間:</strong> {{ selectedResult.makespan }}</p>
-            <p><strong>ピッカーグループ:</strong> {{ selectedResult.picker_group }}</p>
-            <p><strong>マップ情報:</strong> {{ selectedResult.map_info }}</p>
-            <p><strong>在庫情報:</strong> {{ selectedResult.stock_info }}</p>
-            <p><strong>ピッキングリスト:</strong> {{ selectedResult.picking_list }}</p>
+            <p><strong>ピッカーグループ:</strong> {{ selectedResult.req_params.agent.name }} - {{
+                selectedResult.req_params.agent.created_at }}</p>
+            <p><strong>在庫情報:</strong> {{ selectedResult.req_params.stock.name }} - {{
+                selectedResult.req_params.stock.created_at }}</p>
+            <p><strong>ピッキングリスト:</strong> {{ selectedResult.req_params.picking_list.name }} - {{
+            selectedResult.req_params.picking_list.created_at }}</p>
+            <p><strong>マップ情報:</strong> {{ selectedResult.req_params.map_config.name }}</p>
 
             <!-- フッター -->
             <template #modal-footer>
@@ -63,13 +70,13 @@ export default {
             results: [],
             totalResults: 0,
             fields: [
-                { key: 'id', label: 'ID' },
+                { key: 'result_id', label: 'ID' },
                 { key: 'created_at', label: '作成日時' },
                 { key: 'makespan', label: '最大時間' },
                 { key: 'picker_group', label: 'ピッカーグループ' },
-                { key: 'map_info', label: 'マップ情報' },
                 { key: 'stock_info', label: '在庫情報' },
                 { key: 'picking_list', label: 'ピッキングリスト' },
+                { key: 'map_info', label: 'マップ情報' },
             ],
             currentPage: 1,
             perPage: 10,
@@ -100,7 +107,7 @@ export default {
                 });
         },
         onRowClicked(item) {
-            axios.get(`/api/results/${item.id}`)
+            axios.get(`/api/results/${item.result_id}`)
                 .then(response => {
                     this.selectedResult = response.data.result;
                     this.showModal = true;
@@ -112,9 +119,9 @@ export default {
         deleteResult() {
             if (!this.selectedResult) return;
 
-            const id = this.selectedResult.id;
+            const result_id = this.selectedResult.result_id;
 
-            axios.delete(`/api/results/${id}`)
+            axios.delete(`/api/results/${result_id}`)
                 .then(() => {
                     this.showAlert('結果が削除されました。', 'success');
                     this.fetchResults();
