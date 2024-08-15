@@ -1,0 +1,5 @@
+agent_id,amount,initial_place_row,initial_place_col,name
+agent1,10000,49,41,端末0101
+agent2,10000,49,40,端末0102
+agent3,10000,49,39,端末0103
+agent4,10000,49,38,端末0104

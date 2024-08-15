@@ -1,0 +1,646 @@
+{
+    "map_height": 50,
+    "map_width": 50,
+    "racks": [
+        {
+            "width": 50,
+            "height": 1,
+            "pos": [
+                0,
+                0
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-101"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                4,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-102"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                7,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-103"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                10,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-104"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                4,
+                27
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-105"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                7,
+                27
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-106"
+        },
+        {
+            "width": 11,
+            "height": 2,
+            "pos": [
+                10,
+                27
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-01-107"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                14,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-108"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                18,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-109"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                22,
+                12
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-110"
+        },
+        {
+            "width": 8,
+            "height": 2,
+            "pos": [
+                14,
+                21
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-111"
+        },
+        {
+            "width": 8,
+            "height": 2,
+            "pos": [
+                18,
+                21
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-112"
+        },
+        {
+            "width": 8,
+            "height": 2,
+            "pos": [
+                22,
+                21
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-113"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                14,
+                31
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-114"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                18,
+                31
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-115"
+        },
+        {
+            "width": 7,
+            "height": 2,
+            "pos": [
+                22,
+                31
+            ],
+            "pick_direction": "vertical",
+            "rack_id": "101-02-116"
+        },
+        {
+            "width": 1,
+            "height": 4,
+            "pos": [
+                3,
+                0
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-117"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                2
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-118"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                5
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-119"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                8
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-120"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                40
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-121"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                43
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-122"
+        },
+        {
+            "width": 2,
+            "height": 4,
+            "pos": [
+                3,
+                46
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-02-123"
+        },
+        {
+            "width": 1,
+            "height": 4,
+            "pos": [
+                3,
+                49
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-124"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                8,
+                0
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-125"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                2
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-126"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                5
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-127"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                8
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-128"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                40
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-129"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                43
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-130"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                8,
+                46
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-131"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                8,
+                49
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-132"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                17,
+                0
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-133"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                2
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-134"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                5
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-135"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                8
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-136"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                40
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-137"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                43
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-138"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                17,
+                46
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-139"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                17,
+                49
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-140"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                27,
+                0
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-141"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                3
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-142"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                7
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-143"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                11
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-144"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                15
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-145"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                19
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-146"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                29
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-147"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                33
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-148"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                37
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-149"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                41
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-150"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                27,
+                45
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-151"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                27,
+                49
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-152"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                37,
+                0
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-153"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                3
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-154"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                7
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-155"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                11
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-156"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                15
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-157"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                19
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-158"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                29
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-159"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                33
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-160"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                37
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-161"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                41
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-162"
+        },
+        {
+            "width": 2,
+            "height": 8,
+            "pos": [
+                37,
+                45
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-163"
+        },
+        {
+            "width": 1,
+            "height": 8,
+            "pos": [
+                37,
+                49
+            ],
+            "pick_direction": "horizontal",
+            "rack_id": "101-03-164"
+        }
+    ]
+}
