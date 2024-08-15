@@ -11,12 +11,23 @@ import asyncio
 import subprocess
 import json
 import pandas as pd
+from fastapi import FastAPI, WebSocket, HTTPException,  Depends
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
+from starlette.status import HTTP_401_UNAUTHORIZED
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
-from mfutils import generate_random_string, parse_log, parse_route, get_jst_now
+from mfutils import parse_log, parse_route, get_jst_now
 from stock_management import generate_rack_layout
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+USER_NAME = "warehouse_ai_mf"
+PASSWORD = "warehouse_ai_mf"
+
+security = HTTPBasic()
 
 current_dir = Path(__file__).resolve().parent
 storage_dir = current_dir / "storage"
@@ -25,9 +36,6 @@ map_dir = storage_dir / "map_configs"
 stocks_dir = storage_dir / "stocks"
 picking_list_dir = storage_dir / "picking_lists"
 results_dir = storage_dir / "results"
-
-USER_NAME = "ai_shop_assistant"
-PASSWORD = "ai_shop_assistant"
 
 app = FastAPI()
 
@@ -44,9 +52,23 @@ app.mount("/front", StaticFiles(directory=front_dir), name="front")
 app.mount("/js", StaticFiles(directory=front_dir / "js"), name="js")
 app.mount("/css", StaticFiles(directory=front_dir / "css"), name="css")
 
-@app.get("/")
-async def index():
-    return FileResponse(front_dir / "index.html")
+
+@app.get("/", response_class=HTMLResponse)
+async def index(credentials: HTTPBasicCredentials = Depends(security)):
+    username = credentials.username
+    password = credentials.password
+
+
+    if username == USER_NAME and password == PASSWORD:
+        return FileResponse(front_dir / "index.html")
+    else:
+        error = "ユーザ名かパスワードが間違っています"
+        raise HTTPException(
+            status_code=HTTP_401_UNAUTHORIZED,
+            detail=error,
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
 
 
 def load_meta_data(dir_path: Path, resource_name: str):

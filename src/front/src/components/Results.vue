@@ -5,7 +5,31 @@
 
         <!-- テーブル -->
         <b-table :items="results" :fields="fields" @row-clicked="onRowClicked">
-            <!-- テーブルの内容はそのまま -->
+            <template #cell(result_id)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.result_id }}</span>
+            </template>
+            <template #cell(created_at)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.created_at }}</span>
+            </template>
+            <template #cell(makespan)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.makespan }}</span>
+            </template>
+            <template #cell(picker_group)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{
+            data.item.req_params.agent.name }}</span>
+            </template>
+            <template #cell(stock_info)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.stock.name
+                    }}</span>
+            </template>
+            <template #cell(picking_list)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.picking_list.name
+                    }}</span>
+            </template>
+            <template #cell(map_info)="data">
+                <span class="table-row" v-b-tooltip.hover title="クリックすると詳細表示">{{ data.item.req_params.map_config.name
+                    }}</span>
+            </template>
         </b-table>
 
         <b-pagination v-model="currentPage" :total-rows="totalResults" :per-page="perPage" @change="fetchResults"
@@ -18,11 +42,11 @@
             <p><strong>作成日時:</strong> {{ selectedResult.created_at }}</p>
             <p><strong>最大時間:</strong> {{ selectedResult.makespan }}</p>
             <p><strong>ピッカーグループ:</strong> {{ selectedResult.req_params.agent.name }} - {{
-            selectedResult.req_params.agent.created_at }}</p>
+                selectedResult.req_params.agent.created_at }}</p>
             <p><strong>在庫情報:</strong> {{ selectedResult.req_params.stock.name }} - {{
-            selectedResult.req_params.stock.created_at }}</p>
+                selectedResult.req_params.stock.created_at }}</p>
             <p><strong>ピッキングリスト:</strong> {{ selectedResult.req_params.picking_list.name }} - {{
-            selectedResult.req_params.picking_list.created_at }}</p>
+                selectedResult.req_params.picking_list.created_at }}</p>
             <p><strong>マップ情報:</strong> {{ selectedResult.req_params.map_config.name }}</p>
 
             <!-- グラフとGIFを横並びに表示 -->
@@ -256,26 +280,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.table-row {
-    cursor: pointer;
-}
-
-.custom-modal .modal-dialog {
-    max-width: 60%;
-}
-
-.custom-modal .modal-body {
-    display: flex;
-    flex-direction: column;
-    height: 80vh;
-    padding: 10px;
-}
-
-.big-spinner {
-    width: 2rem;
-    height: 2rem;
-    color: #850491;
-}
-</style>
