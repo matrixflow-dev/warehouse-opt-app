@@ -504,6 +504,13 @@ async def get_result(id: str):
         
         with open(result_path, "r") as f:
             result_info = json.load(f)
+
+        output_gif_path = target_dir / "output.gif"
+        with open(output_gif_path, "rb") as gif_file:
+            gif_data = gif_file.read()
+
+        encoded_gif = base64.b64encode(gif_data).decode('utf-8')
+        result_info["gif"] = encoded_gif
         
         return JSONResponse(content={"result": result_info})
     
